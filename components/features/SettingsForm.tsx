@@ -318,7 +318,7 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
                       /sitemap.xml
                     </a>
                     <p className="text-xs text-gray-500 mt-1">
-                      Tüm domain'ler için URL'ler tek bir sitemap'te birleştirilir
+                      Tüm domain&apos;ler için URL&apos;ler tek bir sitemap&apos;te birleştirilir
                     </p>
                   </div>
                   <div className="p-4 bg-gray-50 rounded-md">
@@ -334,7 +334,7 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
                   </div>
                   <div className="pt-4 border-t">
                     <p className="text-sm text-gray-700 mb-3">
-                      Site haritanızı Google, Bing ve Yandex'e göndermek için butona tıklayın:
+                      Site haritanızı Google, Bing ve Yandex&apos;e göndermek için butona tıklayın:
                     </p>
                     <Button
                       type="button"
