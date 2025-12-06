@@ -359,14 +359,21 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
                               </p>
                               <div className="text-xs space-y-1 pl-2">
                                 {sitemapData.results?.map((result: any, rIndex: number) => (
-                                  <div key={rIndex}>
-                                    {result.searchEngine}:{" "}
-                                    {result.ok ? (
-                                      <span className="text-green-600">Başarılı</span>
-                                    ) : (
-                                      <span className="text-yellow-600">
-                                        {result.status || result.error}
-                                      </span>
+                                  <div key={rIndex} className="space-y-1">
+                                    <div>
+                                      {result.searchEngine}:{" "}
+                                      {result.ok ? (
+                                        <span className="text-green-600">Başarılı</span>
+                                      ) : (
+                                        <span className="text-yellow-600">
+                                          {result.status || result.error}
+                                        </span>
+                                      )}
+                                    </div>
+                                    {result.note && (
+                                      <div className="text-xs text-blue-700 bg-blue-50 p-2 rounded mt-1">
+                                        ℹ️ {result.note}
+                                      </div>
                                     )}
                                   </div>
                                 ))}
@@ -375,6 +382,30 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
                           ))}
                         </div>
                       )}
+                      <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
+                        <p className="font-semibold mb-1">⚠️ Önemli Not:</p>
+                        <p>
+                          Google ve Bing ping endpoint&apos;leri artık çalışmıyor. Sitemap&apos;leri{" "}
+                          <a
+                            href="https://search.google.com/search-console"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline font-semibold"
+                          >
+                            Google Search Console
+                          </a>{" "}
+                          ve{" "}
+                          <a
+                            href="https://www.bing.com/webmasters"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline font-semibold"
+                          >
+                            Bing Webmaster Tools
+                          </a>{" "}
+                          üzerinden manuel olarak göndermeniz gerekiyor.
+                        </p>
+                      </div>
                     </div>
                   )}
                   {sitemapStatus.status === "error" && (

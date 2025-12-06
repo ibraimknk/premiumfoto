@@ -22,9 +22,39 @@ async function submitSitemap(searchEngine: string, sitemapUrl: string) {
       headers: {
         "User-Agent": "Foto-Ugur-Sitemap-Bot/1.0",
       },
+      // Timeout ekle
+      signal: AbortSignal.timeout(10000), // 10 saniye timeout
     })
-    return { searchEngine, status: response.status, ok: response.ok, sitemapUrl }
-  } catch (error) {
+    
+    // Google ve Bing genellikle 404/410 döndürür (ping endpoint'leri artık çalışmıyor)
+    // Bu durumda manuel gönderim gerekiyor
+    const status = response.status
+    const ok = response.ok
+    
+    // 404 veya 410 durumunda özel mesaj
+    if ((searchEngine === "google" || searchEngine === "bing") && (status === 404 || status === 410)) {
+      return {
+        searchEngine,
+        status,
+        ok: false,
+        sitemapUrl,
+        note: "Ping endpoint artık çalışmıyor. Google Search Console / Bing Webmaster Tools üzerinden manuel gönderim yapın.",
+      }
+    }
+    
+    return { searchEngine, status, ok, sitemapUrl }
+  } catch (error: any) {
+    // Timeout veya network hatası
+    if (error.name === "TimeoutError" || error.name === "AbortError") {
+      return {
+        searchEngine,
+        error: "Timeout - Endpoint yanıt vermedi",
+        sitemapUrl,
+        note: searchEngine === "google" || searchEngine === "bing"
+          ? "Manuel gönderim önerilir (Google Search Console / Bing Webmaster Tools)"
+          : undefined,
+      }
+    }
     return { searchEngine, error: String(error), sitemapUrl }
   }
 }
