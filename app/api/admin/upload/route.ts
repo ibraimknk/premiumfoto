@@ -22,6 +22,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Dosya bulunamadı" }, { status: 400 })
     }
 
+    // Dosya boyutu kontrolü (50MB limit)
+    const maxFileSize = 50 * 1024 * 1024 // 50MB
+    for (const file of files) {
+      if (file.size > maxFileSize) {
+        return NextResponse.json(
+          { 
+            error: `Dosya çok büyük: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB). Maksimum dosya boyutu: 50MB`,
+            maxSize: maxFileSize,
+            fileSize: file.size,
+          },
+          { status: 413 }
+        )
+      }
+    }
+
     const uploadDir = join(process.cwd(), "public", "uploads")
     
     // Uploads klasörünü oluştur

@@ -163,7 +163,7 @@ server {
     listen 80;
     server_name _;  # Domain adresinizi buraya yazın
 
-    client_max_body_size 10M;
+    client_max_body_size 50M;
 
     location / {
         proxy_pass http://localhost:${APP_PORT};
