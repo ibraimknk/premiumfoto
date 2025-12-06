@@ -1,7 +1,8 @@
 import { MetadataRoute } from 'next'
+import { getPrimaryDomain } from '@/lib/sitemap-utils'
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://fotougur.com'
+  const baseUrl = getPrimaryDomain()
 
   return {
     rules: [

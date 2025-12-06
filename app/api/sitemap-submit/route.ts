@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
+import { getAllDomains } from "@/lib/sitemap-utils"
 
 export const dynamic = 'force-dynamic'
 
@@ -22,9 +23,9 @@ async function submitSitemap(searchEngine: string, sitemapUrl: string) {
         "User-Agent": "Foto-Ugur-Sitemap-Bot/1.0",
       },
     })
-    return { searchEngine, status: response.status, ok: response.ok }
+    return { searchEngine, status: response.status, ok: response.ok, sitemapUrl }
   } catch (error) {
-    return { searchEngine, error: String(error) }
+    return { searchEngine, error: String(error), sitemapUrl }
   }
 }
 
@@ -41,19 +42,30 @@ export async function GET(request: Request) {
     }
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://fotougur.com"
-  const sitemapUrl = `${baseUrl}/sitemap.xml`
+  const domains = getAllDomains()
+  const allResults: any[] = []
 
-  const results = await Promise.all([
-    submitSitemap("google", sitemapUrl),
-    submitSitemap("bing", sitemapUrl),
-    submitSitemap("yandex", sitemapUrl),
-  ])
+  // Her domain için sitemap gönder
+  for (const domain of domains) {
+    const sitemapUrl = `${domain}/sitemap.xml`
+    
+    const results = await Promise.all([
+      submitSitemap("google", sitemapUrl),
+      submitSitemap("bing", sitemapUrl),
+      submitSitemap("yandex", sitemapUrl),
+    ])
+
+    allResults.push({
+      domain,
+      sitemapUrl,
+      results: results.filter(Boolean),
+    })
+  }
 
   return NextResponse.json({
     success: true,
-    sitemapUrl,
-    results: results.filter(Boolean),
+    domains: domains.length,
+    sitemaps: allResults,
     timestamp: new Date().toISOString(),
   })
 }
@@ -65,19 +77,30 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://fotougur.com"
-  const sitemapUrl = `${baseUrl}/sitemap.xml`
+  const domains = getAllDomains()
+  const allResults: any[] = []
 
-  const results = await Promise.all([
-    submitSitemap("google", sitemapUrl),
-    submitSitemap("bing", sitemapUrl),
-    submitSitemap("yandex", sitemapUrl),
-  ])
+  // Her domain için sitemap gönder
+  for (const domain of domains) {
+    const sitemapUrl = `${domain}/sitemap.xml`
+    
+    const results = await Promise.all([
+      submitSitemap("google", sitemapUrl),
+      submitSitemap("bing", sitemapUrl),
+      submitSitemap("yandex", sitemapUrl),
+    ])
+
+    allResults.push({
+      domain,
+      sitemapUrl,
+      results: results.filter(Boolean),
+    })
+  }
 
   return NextResponse.json({
     success: true,
-    sitemapUrl,
-    results: results.filter(Boolean),
+    domains: domains.length,
+    sitemaps: allResults,
     timestamp: new Date().toISOString(),
   })
 }

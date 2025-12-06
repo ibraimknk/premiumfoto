@@ -106,8 +106,8 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
       if (response.ok && data.success) {
         setSitemapStatus({
           status: "success",
-          message: "Site haritası başarıyla arama motorlarına gönderildi!",
-          results: data.results,
+          message: `${data.domains} domain için site haritası başarıyla arama motorlarına gönderildi!`,
+          results: data.sitemaps,
         })
       } else {
         setSitemapStatus({
@@ -291,6 +291,20 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
               <div>
                 <Label>Site Haritası (Sitemap)</Label>
                 <div className="mt-2 space-y-3">
+                  <div className="p-4 bg-blue-50 rounded-md">
+                    <p className="text-sm text-gray-700 mb-2 font-medium">
+                      ⚙️ Domain Yapılandırması
+                    </p>
+                    <p className="text-xs text-gray-600 mb-2">
+                      Çoklu domain desteği için <code className="bg-gray-200 px-1 rounded">.env</code> dosyasına şunu ekleyin:
+                    </p>
+                    <code className="block text-xs bg-gray-100 p-2 rounded mb-2 break-all">
+                      NEXT_PUBLIC_SITE_URLS=https://domain1.com,https://domain2.com,https://domain3.com
+                    </code>
+                    <p className="text-xs text-gray-500">
+                      Veya tek domain için: <code className="bg-gray-200 px-1 rounded">NEXT_PUBLIC_SITE_URL=https://domain.com</code>
+                    </p>
+                  </div>
                   <div className="p-4 bg-gray-50 rounded-md">
                     <p className="text-sm text-gray-600 mb-2">
                       Site haritanız otomatik olarak oluşturulmaktadır:
@@ -303,6 +317,9 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
                     >
                       /sitemap.xml
                     </a>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Tüm domain'ler için URL'ler tek bir sitemap'te birleştirilir
+                    </p>
                   </div>
                   <div className="p-4 bg-gray-50 rounded-md">
                     <p className="text-sm text-gray-600 mb-2">Robots.txt dosyanız:</p>
@@ -331,20 +348,29 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
                     </Button>
                   </div>
                   {sitemapStatus.status === "success" && (
-                    <div className="p-4 bg-green-50 text-green-800 rounded-md">
-                      <p className="font-medium mb-2">✅ {sitemapStatus.message}</p>
-                      {sitemapStatus.results && (
-                        <div className="text-sm space-y-1">
-                          {sitemapStatus.results.map((result: any, index: number) => (
-                            <div key={index}>
-                              {result.searchEngine}:{" "}
-                              {result.ok ? (
-                                <span className="text-green-600">Başarılı</span>
-                              ) : (
-                                <span className="text-yellow-600">
-                                  {result.status || result.error}
-                                </span>
-                              )}
+                    <div className="p-4 bg-green-50 text-green-800 rounded-md space-y-3">
+                      <p className="font-medium">✅ {sitemapStatus.message}</p>
+                      {sitemapStatus.results && Array.isArray(sitemapStatus.results) && (
+                        <div className="space-y-3">
+                          {sitemapStatus.results.map((sitemapData: any, index: number) => (
+                            <div key={index} className="border-t pt-2 first:border-t-0 first:pt-0">
+                              <p className="font-semibold text-sm mb-1">
+                                {sitemapData.domain}
+                              </p>
+                              <div className="text-xs space-y-1 pl-2">
+                                {sitemapData.results?.map((result: any, rIndex: number) => (
+                                  <div key={rIndex}>
+                                    {result.searchEngine}:{" "}
+                                    {result.ok ? (
+                                      <span className="text-green-600">Başarılı</span>
+                                    ) : (
+                                      <span className="text-yellow-600">
+                                        {result.status || result.error}
+                                      </span>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
                             </div>
                           ))}
                         </div>
