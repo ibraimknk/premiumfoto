@@ -1,0 +1,71 @@
+import { NextResponse } from "next/server"
+import { getServerSession } from "next-auth/next"
+import { authOptions } from "@/lib/auth"
+import { writeFile, mkdir } from "fs/promises"
+import { join } from "path"
+import { existsSync } from "fs"
+
+// Bu route dinamik olmalı çünkü authentication için headers kullanıyor
+export const dynamic = 'force-dynamic'
+
+export async function POST(request: Request) {
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const formData = await request.formData()
+    const files = formData.getAll("files") as File[]
+
+    if (!files || files.length === 0) {
+      return NextResponse.json({ error: "Dosya bulunamadı" }, { status: 400 })
+    }
+
+    const uploadDir = join(process.cwd(), "public", "uploads")
+    
+    // Uploads klasörünü oluştur
+    if (!existsSync(uploadDir)) {
+      await mkdir(uploadDir, { recursive: true })
+    }
+
+    const uploadedFiles = []
+
+    for (const file of files) {
+      if (!file) continue
+
+      // Dosya adını güvenli hale getir
+      const timestamp = Date.now()
+      const originalName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_")
+      const fileName = `${timestamp}-${originalName}`
+      const filePath = join(uploadDir, fileName)
+
+      // Dosyayı kaydet
+      const bytes = await file.arrayBuffer()
+      const buffer = Buffer.from(bytes)
+      await writeFile(filePath, buffer)
+
+      // URL'yi oluştur
+      const url = `/uploads/${fileName}`
+
+      uploadedFiles.push({
+        name: file.name,
+        url,
+        size: file.size,
+        type: file.type,
+      })
+    }
+
+    return NextResponse.json({
+      success: true,
+      files: uploadedFiles,
+    })
+  } catch (error: any) {
+    console.error("Upload error:", error)
+    return NextResponse.json(
+      { error: error.message || "Dosya yükleme hatası" },
+      { status: 500 }
+    )
+  }
+}
+

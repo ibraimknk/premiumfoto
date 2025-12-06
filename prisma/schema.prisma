@@ -1,0 +1,154 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  password      String
+  name          String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model SiteSetting {
+  id                String   @id @default(cuid())
+  siteName          String   @default("Foto Uğur")
+  defaultTitle      String?
+  defaultDescription String?
+  logo              String?
+  favicon           String?
+  phone1            String?  // 0216 472 46 28
+  phone2            String?  // 0530 228 56 03
+  whatsapp          String?
+  email             String?
+  address           String?
+  workingHours      String?
+  primaryColor      String?  @default("#000000")
+  secondaryColor    String?  @default("#D4AF37")
+  socialFacebook    String?
+  socialInstagram   String?
+  socialTwitter     String?
+  carouselItems     String?  // JSON array of carousel items
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Service {
+  id                String   @id @default(cuid())
+  title             String
+  slug              String   @unique
+  shortDescription  String?
+  description       String   // Rich text
+  category          String?
+  featuredImage     String?
+  images            String?  // JSON array of image URLs
+  videos            String?  // JSON array of video URLs
+  seoTitle          String?
+  seoDescription    String?
+  seoKeywords       String?
+  ogImage           String?
+  isActive          Boolean  @default(true)
+  order             Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Media {
+  id          String   @id @default(cuid())
+  type        String   // "photo" | "video"
+  title       String?
+  description String?
+  url         String
+  thumbnail   String?
+  category    String?
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model BlogPost {
+  id            String   @id @default(cuid())
+  title         String
+  slug          String   @unique
+  excerpt       String?
+  content       String   // Rich text
+  coverImage    String?
+  category      String?
+  isPublished   Boolean  @default(false)
+  publishedAt   DateTime?
+  seoTitle      String?
+  seoDescription String?
+  seoKeywords   String?
+  ogImage       String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Testimonial {
+  id          String   @id @default(cuid())
+  name        String
+  comment     String
+  serviceType String?
+  rating      Int      @default(5) // 1-5
+  isActive    Boolean  @default(true)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model FAQ {
+  id        String   @id @default(cuid())
+  question  String
+  answer    String   // Rich text
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Page {
+  id            String   @id @default(cuid())
+  title         String
+  slug          String   @unique
+  content       String   // Rich text
+  seoTitle      String?
+  seoDescription String?
+  seoKeywords   String?
+  ogImage       String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  subject   String?
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model MenuItem {
+  id        String   @id @default(cuid())
+  label     String
+  url       String
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  location  String   // "header" | "footer"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
