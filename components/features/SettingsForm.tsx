@@ -56,6 +56,12 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
 
   const [isSaving, setIsSaving] = useState(false)
   const [saveStatus, setSaveStatus] = useState<"idle" | "success" | "error">("idle")
+  const [isSubmittingSitemap, setIsSubmittingSitemap] = useState(false)
+  const [sitemapStatus, setSitemapStatus] = useState<{
+    status: "idle" | "success" | "error"
+    message?: string
+    results?: any
+  }>({ status: "idle" })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -86,6 +92,39 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
     }
   }
 
+  const handleSubmitSitemap = async () => {
+    setIsSubmittingSitemap(true)
+    setSitemapStatus({ status: "idle" })
+
+    try {
+      const response = await fetch("/api/sitemap-submit", {
+        method: "POST",
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        setSitemapStatus({
+          status: "success",
+          message: "Site haritası başarıyla arama motorlarına gönderildi!",
+          results: data.results,
+        })
+      } else {
+        setSitemapStatus({
+          status: "error",
+          message: data.error || "Site haritası gönderilirken bir hata oluştu.",
+        })
+      }
+    } catch (error) {
+      setSitemapStatus({
+        status: "error",
+        message: "Site haritası gönderilirken bir hata oluştu.",
+      })
+    } finally {
+      setIsSubmittingSitemap(false)
+    }
+  }
+
   return (
     <form onSubmit={handleSubmit}>
       <Tabs defaultValue="general" className="space-y-6">
@@ -94,6 +133,7 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
           <TabsTrigger value="carousel">Ana Sayfa Carousel</TabsTrigger>
           <TabsTrigger value="contact">İletişim</TabsTrigger>
           <TabsTrigger value="social">Sosyal Medya</TabsTrigger>
+          <TabsTrigger value="seo">SEO</TabsTrigger>
           <TabsTrigger value="theme">Tema</TabsTrigger>
         </TabsList>
 
@@ -236,6 +276,94 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
                   onChange={(e) => setFormData({ ...formData, socialInstagram: e.target.value })}
                   placeholder="https://instagram.com/..."
                 />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="seo">
+          <Card>
+            <CardHeader>
+              <CardTitle>SEO ve Arama Motorları</CardTitle>
+              <CardDescription>Site haritası ve arama motoru optimizasyonu</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label>Site Haritası (Sitemap)</Label>
+                <div className="mt-2 space-y-3">
+                  <div className="p-4 bg-gray-50 rounded-md">
+                    <p className="text-sm text-gray-600 mb-2">
+                      Site haritanız otomatik olarak oluşturulmaktadır:
+                    </p>
+                    <a
+                      href="/sitemap.xml"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline text-sm font-mono break-all"
+                    >
+                      /sitemap.xml
+                    </a>
+                  </div>
+                  <div className="p-4 bg-gray-50 rounded-md">
+                    <p className="text-sm text-gray-600 mb-2">Robots.txt dosyanız:</p>
+                    <a
+                      href="/robots.txt"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline text-sm font-mono break-all"
+                    >
+                      /robots.txt
+                    </a>
+                  </div>
+                  <div className="pt-4 border-t">
+                    <p className="text-sm text-gray-700 mb-3">
+                      Site haritanızı Google, Bing ve Yandex'e göndermek için butona tıklayın:
+                    </p>
+                    <Button
+                      type="button"
+                      onClick={handleSubmitSitemap}
+                      disabled={isSubmittingSitemap}
+                      variant="outline"
+                    >
+                      {isSubmittingSitemap
+                        ? "Gönderiliyor..."
+                        : "Site Haritasını Arama Motorlarına Gönder"}
+                    </Button>
+                  </div>
+                  {sitemapStatus.status === "success" && (
+                    <div className="p-4 bg-green-50 text-green-800 rounded-md">
+                      <p className="font-medium mb-2">✅ {sitemapStatus.message}</p>
+                      {sitemapStatus.results && (
+                        <div className="text-sm space-y-1">
+                          {sitemapStatus.results.map((result: any, index: number) => (
+                            <div key={index}>
+                              {result.searchEngine}:{" "}
+                              {result.ok ? (
+                                <span className="text-green-600">Başarılı</span>
+                              ) : (
+                                <span className="text-yellow-600">
+                                  {result.status || result.error}
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {sitemapStatus.status === "error" && (
+                    <div className="p-4 bg-red-50 text-red-800 rounded-md">
+                      <p className="font-medium">❌ {sitemapStatus.message}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="pt-4 border-t">
+                <p className="text-sm text-gray-600 mb-2">
+                  <strong>Not:</strong> Site haritası otomatik olarak güncellenir. Yeni içerik
+                  eklediğinizde veya güncellediğinizde, arama motorlarını bilgilendirmek için bu
+                  butona tıklayın.
+                </p>
               </div>
             </CardContent>
           </Card>

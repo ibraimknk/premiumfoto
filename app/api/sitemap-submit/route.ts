@@ -1,4 +1,8 @@
 import { NextResponse } from "next/server"
+import { getServerSession } from "next-auth/next"
+import { authOptions } from "@/lib/auth"
+
+export const dynamic = 'force-dynamic'
 
 // Sitemap'i arama motorlarına gönder
 async function submitSitemap(searchEngine: string, sitemapUrl: string) {
@@ -25,11 +29,39 @@ async function submitSitemap(searchEngine: string, sitemapUrl: string) {
 }
 
 export async function GET(request: Request) {
-  const authHeader = request.headers.get("authorization")
-  const expectedToken = process.env.SITEMAP_SUBMIT_TOKEN
+  // Admin session kontrolü
+  const session = await getServerSession(authOptions)
+  if (!session) {
+    // Alternatif olarak token kontrolü (cron job için)
+    const authHeader = request.headers.get("authorization")
+    const expectedToken = process.env.SITEMAP_SUBMIT_TOKEN
 
-  // Basit token kontrolü (production'da daha güvenli bir yöntem kullanın)
-  if (!expectedToken || authHeader !== `Bearer ${expectedToken}`) {
+    if (!expectedToken || authHeader !== `Bearer ${expectedToken}`) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+  }
+
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://fotougur.com"
+  const sitemapUrl = `${baseUrl}/sitemap.xml`
+
+  const results = await Promise.all([
+    submitSitemap("google", sitemapUrl),
+    submitSitemap("bing", sitemapUrl),
+    submitSitemap("yandex", sitemapUrl),
+  ])
+
+  return NextResponse.json({
+    success: true,
+    sitemapUrl,
+    results: results.filter(Boolean),
+    timestamp: new Date().toISOString(),
+  })
+}
+
+export async function POST(request: Request) {
+  // Admin session kontrolü
+  const session = await getServerSession(authOptions)
+  if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 

@@ -51,3 +51,4 @@ sudo bash deploy.sh
 
 Script artık mevcut dizinde çalışacak ve git repository'yi bulacak.
 
+
