@@ -78,6 +78,18 @@ export async function POST(request: Request) {
   } catch (error: any) {
     console.error("Upload error:", error)
     
+    // HTTP 413 hatası için özel mesaj
+    if (error.message?.includes("413") || error.status === 413 || error.message?.includes("Payload Too Large")) {
+      return NextResponse.json(
+        { 
+          success: false,
+          error: "Dosya çok büyük. Maksimum dosya boyutu: 50MB. Lütfen daha küçük bir dosya seçin veya dosyayı sıkıştırın.",
+          maxSize: 50 * 1024 * 1024,
+        },
+        { status: 413 }
+      )
+    }
+    
     // Daha detaylı hata mesajı
     let errorMessage = "Dosya yükleme hatası"
     if (error.code === "ENOENT") {
