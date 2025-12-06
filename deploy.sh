@@ -18,7 +18,8 @@ NC='\033[0m' # No Color
 # Değişkenler
 APP_NAME="foto-ugur"
 APP_PORT=3040
-APP_DIR="/var/www/${APP_NAME}"
+# Mevcut dizini kullan (script'in çalıştığı dizin)
+APP_DIR="${APP_DIR:-$(pwd)}"
 NODE_VERSION="20"
 PM2_APP_NAME="foto-ugur-app"
 
@@ -67,20 +68,32 @@ if ! command -v pm2 &> /dev/null; then
 fi
 echo -e "${GREEN}✅ PM2 kurulu${NC}"
 
-# Uygulama dizini oluşturma
-echo -e "${YELLOW}📁 Uygulama dizini oluşturuluyor...${NC}"
-mkdir -p ${APP_DIR}
-cd ${APP_DIR}
+# Uygulama dizini kontrolü
+echo -e "${YELLOW}📁 Uygulama dizini kontrol ediliyor...${NC}"
+# Eğer APP_DIR mevcut dizinden farklıysa, oluştur ve git clone yap
+if [ "$(pwd)" != "${APP_DIR}" ] && [ "${APP_DIR}" != "$(pwd)" ]; then
+    mkdir -p ${APP_DIR}
+    if [ ! -d "${APP_DIR}/.git" ]; then
+        echo -e "${YELLOW}📥 Git repository'den klonlanıyor...${NC}"
+        cd /tmp
+        git clone https://github.com/ibraimknk/premiumfoto.git ${APP_DIR} || {
+            echo -e "${RED}❌ Git clone başarısız! Lütfen repository URL'ini kontrol edin.${NC}"
+            exit 1
+        }
+    fi
+    cd ${APP_DIR}
+else
+    # Mevcut dizinde çalış
+    APP_DIR="$(pwd)"
+    echo -e "${GREEN}✅ Mevcut dizin kullanılıyor: ${APP_DIR}${NC}"
+fi
 
-# Git repository'den çekme (eğer git repo ise)
-# veya dosyaları kopyalama
+# Git repository kontrolü
 if [ -d ".git" ]; then
     echo -e "${YELLOW}🔄 Git repository güncelleniyor...${NC}"
-    git pull origin main || git pull origin master
+    git pull origin main || git pull origin master || echo -e "${YELLOW}⚠️  Git pull atlandı (zaten güncel olabilir)${NC}"
 else
-    echo -e "${YELLOW}⚠️  Git repository bulunamadı. Lütfen proje dosyalarını ${APP_DIR} dizinine kopyalayın.${NC}"
-    echo "Dosyalar kopyalandıktan sonra script'i tekrar çalıştırın."
-    exit 1
+    echo -e "${YELLOW}⚠️  Git repository bulunamadı. Mevcut dosyalar kullanılacak.${NC}"
 fi
 
 # .env dosyası kontrolü ve oluşturma
