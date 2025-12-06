@@ -11,12 +11,20 @@ YELLOW='\033[1;33m'
 NC='\033[0m'
 
 # Değişkenler
-APP_DIR="/var/www/foto-ugur"
+# Mevcut dizini kullan (script'in çalıştığı dizin)
+APP_DIR="${APP_DIR:-$(pwd)}"
 PM2_APP_NAME="foto-ugur-app"
 
 echo -e "${YELLOW}🔄 Uygulama güncelleniyor...${NC}"
 
-cd ${APP_DIR}
+# Eğer APP_DIR mevcut dizinden farklıysa, o dizine git
+if [ "$(pwd)" != "${APP_DIR}" ] && [ "${APP_DIR}" != "$(pwd)" ]; then
+    cd ${APP_DIR}
+else
+    # Mevcut dizinde çalış
+    APP_DIR="$(pwd)"
+    echo -e "${GREEN}✅ Mevcut dizin kullanılıyor: ${APP_DIR}${NC}"
+fi
 
 # Git pull
 if [ -d ".git" ]; then
