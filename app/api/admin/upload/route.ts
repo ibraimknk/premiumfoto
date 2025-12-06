@@ -62,8 +62,25 @@ export async function POST(request: Request) {
     })
   } catch (error: any) {
     console.error("Upload error:", error)
+    
+    // Daha detaylı hata mesajı
+    let errorMessage = "Dosya yükleme hatası"
+    if (error.code === "ENOENT") {
+      errorMessage = "Upload klasörü oluşturulamadı"
+    } else if (error.code === "EACCES") {
+      errorMessage = "Dosya yazma izni yok"
+    } else if (error.code === "ENOSPC") {
+      errorMessage = "Disk dolu"
+    } else if (error.message) {
+      errorMessage = error.message
+    }
+    
     return NextResponse.json(
-      { error: error.message || "Dosya yükleme hatası" },
+      { 
+        success: false,
+        error: errorMessage,
+        details: process.env.NODE_ENV === "development" ? error.stack : undefined
+      },
       { status: 500 }
     )
   }

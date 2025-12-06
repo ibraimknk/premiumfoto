@@ -91,10 +91,22 @@ export function GalleryUpload({ onFilesUploaded }: GalleryUploadProps) {
       })
 
       if (!response.ok) {
-        throw new Error("Yükleme başarısız")
+        // Hata mesajını API'den al
+        let errorMessage = "Yükleme başarısız"
+        try {
+          const errorData = await response.json()
+          errorMessage = errorData.error || errorMessage
+        } catch {
+          errorMessage = `HTTP ${response.status}: ${response.statusText}`
+        }
+        throw new Error(errorMessage)
       }
 
       const data = await response.json()
+      
+      if (!data.success || !data.files) {
+        throw new Error(data.error || "Yükleme başarısız")
+      }
       setUploadedFiles(data.files)
       // Kategori ile birlikte callback'e gönder
       onFilesUploaded(data.files.map((file: UploadedFile) => ({
