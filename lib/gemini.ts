@@ -8,6 +8,52 @@ if (!API_KEY) {
 
 const genAI = new GoogleGenerativeAI(API_KEY)
 
+// Mevcut modelleri listele ve çalışan modeli bul
+async function getAvailableModel(): Promise<string> {
+  try {
+    // Önce mevcut modelleri listele
+    const models = await genAI.listModels()
+    const availableModels = (models as any).data?.map((m: any) => {
+      const name = m.name || m
+      return typeof name === 'string' ? name.replace("models/", "") : name
+    }) || []
+    
+    console.log("Mevcut modeller:", availableModels)
+    
+    // Öncelik sırasına göre modelleri dene
+    const modelsToTry = [
+      "gemini-pro",
+      "gemini-1.5-pro",
+      "gemini-1.5-flash",
+      "gemini-1.5-pro-latest",
+      "gemini-1.5-flash-latest"
+    ]
+    
+    // Mevcut modeller arasında çalışan birini bul
+    for (const modelName of modelsToTry) {
+      if (availableModels.some((m: string) => m.includes(modelName))) {
+        console.log(`Kullanılacak model: ${modelName}`)
+        return modelName
+      }
+    }
+    
+    // Eğer hiçbiri bulunamazsa, ilk mevcut modeli kullan
+    if (availableModels.length > 0) {
+      const firstModel = availableModels[0]
+      console.log(`Varsayılan model kullanılıyor: ${firstModel}`)
+      return firstModel
+    }
+    
+    // Son çare olarak gemini-pro'yu dene
+    console.log("Varsayılan olarak gemini-pro kullanılıyor")
+    return "gemini-pro"
+  } catch (error: any) {
+    console.error("Model listesi alınamadı:", error.message)
+    // Hata durumunda varsayılan modeli kullan
+    return "gemini-pro"
+  }
+}
+
 export interface BlogPostData {
   title: string
   slug: string
@@ -20,29 +66,9 @@ export interface BlogPostData {
 }
 
 export async function generateBlogPost(topic?: string): Promise<BlogPostData> {
-  // Gemini API model adlarını sırayla dene
-  const modelsToTry = ["gemini-1.5-pro", "gemini-pro", "gemini-1.5-flash"]
-  let model
-  let lastError: Error | null = null
-
-  for (const modelName of modelsToTry) {
-    try {
-      model = genAI.getGenerativeModel({ model: modelName })
-      // Model başarıyla oluşturuldu, döngüden çık
-      break
-    } catch (error: any) {
-      lastError = error
-      console.log(`Model ${modelName} deneniyor...`)
-      // Sonraki modeli dene
-      continue
-    }
-  }
-
-  if (!model) {
-    throw new Error(
-      `Hiçbir Gemini modeli çalışmıyor. Son hata: ${lastError?.message || "Bilinmeyen hata"}. Lütfen API key'inizin geçerli olduğundan ve gerekli izinlere sahip olduğundan emin olun.`
-    )
-  }
+  // Mevcut modelleri kontrol et ve çalışan bir model seç
+  const modelName = await getAvailableModel()
+  const model = genAI.getGenerativeModel({ model: modelName })
 
   const prompt = `Sen bir profesyonel SEO uzmanı ve içerik yazarısın. Fotoğrafçılık ve düğün fotoğrafçılığı konusunda uzmanlaşmış bir web sitesi için SEO uyumlu, kaliteli bir blog yazısı oluştur.
 
