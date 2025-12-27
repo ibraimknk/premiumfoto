@@ -9,36 +9,63 @@ if (!API_KEY) {
 // API key'i logla (sadece ilk 10 karakteri güvenlik için)
 console.log(`Gemini API Key kullanılıyor: ${API_KEY.substring(0, 10)}...`)
 
+// API key'i logla (sadece ilk 10 karakteri güvenlik için)
+console.log(`Gemini API Key kullanılıyor: ${API_KEY.substring(0, 10)}...`)
+
 const genAI = new GoogleGenerativeAI(API_KEY)
 
 // Çalışan modeli bul (gerçek API çağrısı ile test et)
 async function getAvailableModel(): Promise<string> {
   // Öncelik sırasına göre modelleri dene
+  // Not: Bazı API key'ler sadece belirli modellere erişim sağlar
   const modelsToTry = [
     "gemini-1.5-flash",
-    "gemini-1.5-pro",
-    "gemini-pro"
+    "gemini-1.5-pro", 
+    "gemini-pro",
+    "models/gemini-1.5-flash",
+    "models/gemini-1.5-pro",
+    "models/gemini-pro"
   ]
   
   // Her modeli gerçek API çağrısı ile test et
   for (const modelName of modelsToTry) {
     try {
       const testModel = genAI.getGenerativeModel({ model: modelName })
-      // Gerçek bir test çağrısı yap
-      const testResult = await testModel.generateContent("test")
-      await testResult.response
+      // Gerçek bir test çağrısı yap (çok kısa bir prompt)
+      const testResult = await testModel.generateContent("Hi")
+      const testResponse = await testResult.response
+      const testText = testResponse.text()
+      
       // Model çalışıyor, kullanılabilir
-      console.log(`Kullanılacak model: ${modelName}`)
+      console.log(`✅ Model ${modelName} çalışıyor!`)
       return modelName
     } catch (error: any) {
-      console.log(`Model ${modelName} çalışmıyor: ${error.message?.substring(0, 100)}`)
+      const errorMsg = error.message || String(error)
+      console.log(`❌ Model ${modelName} çalışmıyor: ${errorMsg.substring(0, 150)}`)
+      
+      // Eğer 404 hatası alıyorsak, model adı yanlış olabilir
+      if (errorMsg.includes("404") || errorMsg.includes("not found")) {
+        continue
+      }
+      
+      // Eğer API key hatası varsa, durdur
+      if (errorMsg.includes("API key") || errorMsg.includes("authentication") || errorMsg.includes("401") || errorMsg.includes("403")) {
+        throw new Error(
+          `API Key hatası: ${errorMsg}. Lütfen API key'inizin geçerli olduğundan ve Gemini API'ye erişim izniniz olduğundan emin olun.`
+        )
+      }
+      
       continue
     }
   }
   
   // Hiçbiri çalışmazsa hata fırlat
   throw new Error(
-    "Hiçbir Gemini modeli çalışmıyor. Lütfen API key'inizin geçerli olduğundan ve gerekli izinlere sahip olduğundan emin olun."
+    "Hiçbir Gemini modeli çalışmıyor. Lütfen:\n" +
+    "1. API key'inizin geçerli olduğundan emin olun\n" +
+    "2. Google AI Studio'da (https://aistudio.google.com/) API key'inizi kontrol edin\n" +
+    "3. API key'inizin Gemini API'ye erişim izni olduğundan emin olun\n" +
+    "4. Gerekirse yeni bir API key oluşturun"
   )
 }
 
