@@ -6,6 +6,9 @@ if (!API_KEY) {
   throw new Error("GEMINI_API_KEY environment variable is not set")
 }
 
+// API key'i logla (sadece ilk 10 karakteri güvenlik için)
+console.log(`Gemini API Key kullanılıyor: ${API_KEY.substring(0, 10)}...`)
+
 const genAI = new GoogleGenerativeAI(API_KEY)
 
 // Çalışan modeli bul (gerçek API çağrısı ile test et)
