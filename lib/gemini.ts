@@ -178,7 +178,7 @@ Lütfen aşağıdaki formatta JSON yanıt ver:
       // Cover image oluşturma devre dışı (kırık link sorunu nedeniyle)
       // Görsel oluşturma özelliği şimdilik kapalı
       // İleride gerçek görsel oluşturma API'si entegre edilebilir
-      blogData.coverImage = null
+      blogData.coverImage = undefined
 
       return blogData
     } catch (parseError: any) {
