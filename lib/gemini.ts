@@ -110,7 +110,8 @@ Lütfen aşağıdaki formatta JSON yanıt ver:
   "seoTitle": "SEO başlığı (50-60 karakter, title'dan biraz farklı olabilir)",
   "seoDescription": "Meta açıklama (150-160 karakter, arama motorları için optimize edilmiş)",
   "seoKeywords": "anahtar,kelimeler,virgülle,ayrılmış (5-10 anahtar kelime)",
-  "content": "HTML formatında zengin içerik. En az 800 kelime. H1, H2, H3 başlıkları kullan. Paragraflar <p> etiketi ile. Liste varsa <ul><li> kullan. SEO için optimize edilmiş, doğal dilde, değerli bilgiler içeren içerik. İçerik Türkçe olmalı."
+  "content": "HTML formatında zengin içerik. En az 800 kelime. H1, H2, H3 başlıkları kullan. Paragraflar <p> etiketi ile. Liste varsa <ul><li> kullan. SEO için optimize edilmiş, doğal dilde, değerli bilgiler içeren içerik. İçerik Türkçe olmalı. Görseller için <img> etiketi kullan ve alt attribute'u ekle (SEO için önemli).",
+  "coverImageAlt": "Blog görseli için SEO uyumlu alt text (80-100 karakter, anahtar kelimeler içermeli)"
 }
 
 Önemli kurallar:
@@ -174,15 +175,10 @@ Lütfen aşağıdaki formatta JSON yanıt ver:
         )
       }
 
-      // Cover image oluştur (eğer yoksa)
-      if (!blogData.coverImage) {
-        const imagePrompt = `${blogData.title} - ${blogData.category || 'Fotoğrafçılık'} - Profesyonel, yüksek kaliteli görsel`
-        const coverImageUrl = await generateImage(imagePrompt)
-        if (coverImageUrl) {
-          blogData.coverImage = coverImageUrl
-          console.log(`Cover image oluşturuldu: ${coverImageUrl}`)
-        }
-      }
+      // Cover image oluşturma devre dışı (kırık link sorunu nedeniyle)
+      // Görsel oluşturma özelliği şimdilik kapalı
+      // İleride gerçek görsel oluşturma API'si entegre edilebilir
+      blogData.coverImage = null
 
       return blogData
     } catch (parseError: any) {
