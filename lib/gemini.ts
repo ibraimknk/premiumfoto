@@ -20,7 +20,7 @@ export interface BlogPostData {
 }
 
 export async function generateBlogPost(topic?: string): Promise<BlogPostData> {
-  const model = genAI.getGenerativeModel({ model: "gemini-pro" })
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
 
   const prompt = `Sen bir profesyonel SEO uzmanı ve içerik yazarısın. Fotoğrafçılık ve düğün fotoğrafçılığı konusunda uzmanlaşmış bir web sitesi için SEO uyumlu, kaliteli bir blog yazısı oluştur.
 
