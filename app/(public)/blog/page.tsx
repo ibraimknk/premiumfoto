@@ -8,6 +8,10 @@ import Container from "@/components/layout/Container"
 import { AnimatedSection } from "@/components/features/AnimatedSection"
 import { shouldUnoptimizeImage } from "@/lib/image-utils"
 
+// Force dynamic rendering to always fetch fresh data
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export async function generateMetadata() {
   return await generatePageMetadata(
     "Blog - Foto Uğur",
@@ -18,9 +22,17 @@ export async function generateMetadata() {
 
 export default async function BlogPage() {
   const posts = await prisma.blogPost.findMany({
-    where: { isPublished: true },
+    where: { 
+      isPublished: true,
+      // publishedAt null olmamalı (opsiyonel kontrol)
+    },
     orderBy: { publishedAt: 'desc' },
   })
+  
+  // Debug için log (sadece development'ta)
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`Blog sayfası: ${posts.length} yayınlanmış blog bulundu`)
+  }
 
   return (
     <div className="bg-neutral-50">
