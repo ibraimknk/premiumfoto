@@ -20,7 +20,29 @@ export interface BlogPostData {
 }
 
 export async function generateBlogPost(topic?: string): Promise<BlogPostData> {
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
+  // Gemini API model adlarını sırayla dene
+  const modelsToTry = ["gemini-1.5-pro", "gemini-pro", "gemini-1.5-flash"]
+  let model
+  let lastError: Error | null = null
+
+  for (const modelName of modelsToTry) {
+    try {
+      model = genAI.getGenerativeModel({ model: modelName })
+      // Model başarıyla oluşturuldu, döngüden çık
+      break
+    } catch (error: any) {
+      lastError = error
+      console.log(`Model ${modelName} deneniyor...`)
+      // Sonraki modeli dene
+      continue
+    }
+  }
+
+  if (!model) {
+    throw new Error(
+      `Hiçbir Gemini modeli çalışmıyor. Son hata: ${lastError?.message || "Bilinmeyen hata"}. Lütfen API key'inizin geçerli olduğundan ve gerekli izinlere sahip olduğundan emin olun.`
+    )
+  }
 
   const prompt = `Sen bir profesyonel SEO uzmanı ve içerik yazarısın. Fotoğrafçılık ve düğün fotoğrafçılığı konusunda uzmanlaşmış bir web sitesi için SEO uyumlu, kaliteli bir blog yazısı oluştur.
 
