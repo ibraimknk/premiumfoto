@@ -8,31 +8,35 @@ if (!API_KEY) {
 
 const genAI = new GoogleGenerativeAI(API_KEY)
 
-// Çalışan modeli bul (modelleri sırayla dene)
+// Çalışan modeli bul (gerçek API çağrısı ile test et)
 async function getAvailableModel(): Promise<string> {
   // Öncelik sırasına göre modelleri dene
   const modelsToTry = [
-    "gemini-pro",
+    "gemini-1.5-flash",
     "gemini-1.5-pro",
-    "gemini-1.5-flash"
+    "gemini-pro"
   ]
   
-  // Her modeli test et (basit bir test prompt ile)
+  // Her modeli gerçek API çağrısı ile test et
   for (const modelName of modelsToTry) {
     try {
       const testModel = genAI.getGenerativeModel({ model: modelName })
-      // Model oluşturulabildi, kullanılabilir
+      // Gerçek bir test çağrısı yap
+      const testResult = await testModel.generateContent("test")
+      await testResult.response
+      // Model çalışıyor, kullanılabilir
       console.log(`Kullanılacak model: ${modelName}`)
       return modelName
     } catch (error: any) {
-      console.log(`Model ${modelName} kullanılamıyor, bir sonrakini deniyor...`)
+      console.log(`Model ${modelName} çalışmıyor: ${error.message?.substring(0, 100)}`)
       continue
     }
   }
   
-  // Hiçbiri çalışmazsa varsayılan olarak gemini-pro'yu dene
-  console.log("Varsayılan olarak gemini-pro kullanılıyor")
-  return "gemini-pro"
+  // Hiçbiri çalışmazsa hata fırlat
+  throw new Error(
+    "Hiçbir Gemini modeli çalışmıyor. Lütfen API key'inizin geçerli olduğundan ve gerekli izinlere sahip olduğundan emin olun."
+  )
 }
 
 export interface BlogPostData {
