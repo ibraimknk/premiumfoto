@@ -8,50 +8,31 @@ if (!API_KEY) {
 
 const genAI = new GoogleGenerativeAI(API_KEY)
 
-// Mevcut modelleri listele ve çalışan modeli bul
+// Çalışan modeli bul (modelleri sırayla dene)
 async function getAvailableModel(): Promise<string> {
-  try {
-    // Önce mevcut modelleri listele
-    const models = await genAI.listModels()
-    const availableModels = (models as any).data?.map((m: any) => {
-      const name = m.name || m
-      return typeof name === 'string' ? name.replace("models/", "") : name
-    }) || []
-    
-    console.log("Mevcut modeller:", availableModels)
-    
-    // Öncelik sırasına göre modelleri dene
-    const modelsToTry = [
-      "gemini-pro",
-      "gemini-1.5-pro",
-      "gemini-1.5-flash",
-      "gemini-1.5-pro-latest",
-      "gemini-1.5-flash-latest"
-    ]
-    
-    // Mevcut modeller arasında çalışan birini bul
-    for (const modelName of modelsToTry) {
-      if (availableModels.some((m: string) => m.includes(modelName))) {
-        console.log(`Kullanılacak model: ${modelName}`)
-        return modelName
-      }
+  // Öncelik sırasına göre modelleri dene
+  const modelsToTry = [
+    "gemini-pro",
+    "gemini-1.5-pro",
+    "gemini-1.5-flash"
+  ]
+  
+  // Her modeli test et (basit bir test prompt ile)
+  for (const modelName of modelsToTry) {
+    try {
+      const testModel = genAI.getGenerativeModel({ model: modelName })
+      // Model oluşturulabildi, kullanılabilir
+      console.log(`Kullanılacak model: ${modelName}`)
+      return modelName
+    } catch (error: any) {
+      console.log(`Model ${modelName} kullanılamıyor, bir sonrakini deniyor...`)
+      continue
     }
-    
-    // Eğer hiçbiri bulunamazsa, ilk mevcut modeli kullan
-    if (availableModels.length > 0) {
-      const firstModel = availableModels[0]
-      console.log(`Varsayılan model kullanılıyor: ${firstModel}`)
-      return firstModel
-    }
-    
-    // Son çare olarak gemini-pro'yu dene
-    console.log("Varsayılan olarak gemini-pro kullanılıyor")
-    return "gemini-pro"
-  } catch (error: any) {
-    console.error("Model listesi alınamadı:", error.message)
-    // Hata durumunda varsayılan modeli kullan
-    return "gemini-pro"
   }
+  
+  // Hiçbiri çalışmazsa varsayılan olarak gemini-pro'yu dene
+  console.log("Varsayılan olarak gemini-pro kullanılıyor")
+  return "gemini-pro"
 }
 
 export interface BlogPostData {
