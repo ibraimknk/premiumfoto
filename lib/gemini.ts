@@ -17,14 +17,22 @@ const genAI = new GoogleGenerativeAI(API_KEY)
 // Çalışan modeli bul (gerçek API çağrısı ile test et)
 async function getAvailableModel(): Promise<string> {
   // Öncelik sırasına göre modelleri dene
-  // Not: Bazı API key'ler sadece belirli modellere erişim sağlar
+  // Not: Güncel Gemini API modelleri (2025)
   const modelsToTry = [
+    "gemini-2.5-flash",
+    "gemini-2.5-pro",
+    "gemini-2.0-flash",
+    "gemini-flash-latest",
+    "gemini-pro-latest",
+    "models/gemini-2.5-flash",
+    "models/gemini-2.5-pro",
+    "models/gemini-2.0-flash",
+    "models/gemini-flash-latest",
+    "models/gemini-pro-latest",
+    // Eski modeller (fallback)
     "gemini-1.5-flash",
-    "gemini-1.5-pro", 
-    "gemini-pro",
-    "models/gemini-1.5-flash",
-    "models/gemini-1.5-pro",
-    "models/gemini-pro"
+    "gemini-1.5-pro",
+    "gemini-pro"
   ]
   
   // Her modeli gerçek API çağrısı ile test et
