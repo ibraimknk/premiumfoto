@@ -35,6 +35,14 @@ else
     exit 1
 fi
 
+# .env dosyası kontrolü (GEMINI_API_KEY)
+if [ -f ".env" ]; then
+    if ! grep -q "GEMINI_API_KEY" .env; then
+        echo "GEMINI_API_KEY=\"AIzaSyB06DSrZjgcCqgA_FOxJf-1JyIESlbwLqQ\"" >> .env
+        echo -e "${GREEN}✅ GEMINI_API_KEY .env dosyasına eklendi${NC}"
+    fi
+fi
+
 # Bağımlılıkları güncelle
 echo -e "${YELLOW}📦 Bağımlılıklar güncelleniyor...${NC}"
 npm ci --production=false

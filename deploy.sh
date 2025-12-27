@@ -171,6 +171,9 @@ DATABASE_URL="file:./prisma/dev.db"
 NEXTAUTH_URL="https://${DOMAIN1_CLEAN}"
 NEXTAUTH_SECRET="$(openssl rand -base64 32)"
 
+# Gemini AI
+GEMINI_API_KEY="AIzaSyB06DSrZjgcCqgA_FOxJf-1JyIESlbwLqQ"
+
 # Node Environment
 NODE_ENV=production
 PORT=${APP_PORT}
@@ -194,6 +197,11 @@ else
     if grep -q "NEXTAUTH_URL" .env; then
         sed -i "s|NEXTAUTH_URL=.*|NEXTAUTH_URL=\"https://${DOMAIN1_CLEAN}\"|" .env
         echo -e "${GREEN}✅ NEXTAUTH_URL güncellendi${NC}"
+    fi
+    # GEMINI_API_KEY'i ekle (yoksa)
+    if ! grep -q "GEMINI_API_KEY" .env; then
+        echo "GEMINI_API_KEY=\"AIzaSyB06DSrZjgcCqgA_FOxJf-1JyIESlbwLqQ\"" >> .env
+        echo -e "${GREEN}✅ GEMINI_API_KEY eklendi${NC}"
     fi
 fi
 
