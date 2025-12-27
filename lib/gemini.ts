@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai"
+import { generateImage } from "./gemini-image"
 
 const API_KEY = process.env.GEMINI_API_KEY || "AIzaSyB06DSrZjgcCqgA_FOxJf-1JyIESlbwLqQ"
 
@@ -86,6 +87,8 @@ export interface BlogPostData {
   seoTitle: string
   seoDescription: string
   seoKeywords: string
+  coverImage?: string
+  coverImageAlt?: string
 }
 
 export async function generateBlogPost(topic?: string): Promise<BlogPostData> {
@@ -154,8 +157,32 @@ Lütfen aşağıdaki formatta JSON yanıt ver:
       .replace(/ö/g, "o")
       .replace(/ü/g, "u")
       .replace(/[^a-z0-9-]/g, "-")
-      .replace(/-+/g, "-")
-      .replace(/^-|-$/g, "")
+        .replace(/-+/g, "-")
+        .replace(/^-|-$/g, "")
+
+      // İçerikteki görseller için alt text ekle (yoksa)
+      if (blogData.content && !blogData.content.includes('alt=')) {
+        // İçerikteki <img> etiketlerine alt text ekle
+        blogData.content = blogData.content.replace(
+          /<img([^>]*?)>/gi,
+          (match, attrs) => {
+            if (!attrs.includes('alt=')) {
+              return `<img${attrs} alt="${blogData.coverImageAlt || blogData.title}">`
+            }
+            return match
+          }
+        )
+      }
+
+      // Cover image oluştur (eğer yoksa)
+      if (!blogData.coverImage) {
+        const imagePrompt = `${blogData.title} - ${blogData.category || 'Fotoğrafçılık'} - Profesyonel, yüksek kaliteli görsel`
+        const coverImageUrl = await generateImage(imagePrompt)
+        if (coverImageUrl) {
+          blogData.coverImage = coverImageUrl
+          console.log(`Cover image oluşturuldu: ${coverImageUrl}`)
+        }
+      }
 
       return blogData
     } catch (parseError: any) {

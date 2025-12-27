@@ -45,7 +45,7 @@ export async function POST(request: Request) {
           counter++
         }
 
-        // Blog yazısını veritabanına kaydet
+        // Blog yazısını veritabanına kaydet (otomatik yayınla)
         const post = await prisma.blogPost.create({
           data: {
             title: blogData.title,
@@ -56,7 +56,10 @@ export async function POST(request: Request) {
             seoTitle: blogData.seoTitle,
             seoDescription: blogData.seoDescription,
             seoKeywords: blogData.seoKeywords,
-            isPublished: false, // Varsayılan olarak yayınlanmamış
+            coverImage: blogData.coverImage || null,
+            ogImage: blogData.coverImage || null,
+            isPublished: true, // Otomatik olarak yayınla
+            publishedAt: new Date(), // Yayın tarihi şimdi
           },
         })
 
