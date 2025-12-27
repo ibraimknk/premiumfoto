@@ -132,7 +132,17 @@ Lütfen aşağıdaki formatta JSON yanıt ver:
       jsonText = jsonText.replace(/^```\s*/, "").replace(/\s*```$/, "")
     }
 
-    const blogData = JSON.parse(jsonText) as BlogPostData
+    // JSON'daki geçersiz kontrol karakterlerini temizle
+    jsonText = jsonText
+      // Geçersiz kontrol karakterlerini kaldır (0x00-0x1F arası, \n, \r, \t hariç)
+      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "")
+      // Çoklu boşlukları tek boşluğa çevir
+      .replace(/\s+/g, " ")
+      // JSON string içindeki geçersiz karakterleri escape et
+      .replace(/\\(?!["\\/bfnrt])/g, "\\\\")
+
+    try {
+      const blogData = JSON.parse(jsonText) as BlogPostData
 
     // Slug'ı temizle ve formatla
     blogData.slug = blogData.slug
@@ -147,7 +157,33 @@ Lütfen aşağıdaki formatta JSON yanıt ver:
       .replace(/-+/g, "-")
       .replace(/^-|-$/g, "")
 
-    return blogData
+      return blogData
+    } catch (parseError: any) {
+      // JSON parse hatası durumunda, daha agresif temizleme dene
+      console.error("JSON parse hatası, daha agresif temizleme deneniyor...", parseError.message)
+      
+      // JSON'u daha agresif temizle
+      jsonText = jsonText
+        .replace(/[\x00-\x1F\x7F-\x9F]/g, "") // Tüm kontrol karakterlerini kaldır
+        .replace(/\n/g, " ") // Yeni satırları boşluğa çevir
+        .replace(/\r/g, "") // Carriage return'leri kaldır
+        .replace(/\t/g, " ") // Tab'leri boşluğa çevir
+        .replace(/\\"/g, '"') // Escaped tırnakları düzelt
+        .replace(/\\'/g, "'") // Escaped apostrophe'ları düzelt
+      
+      try {
+        const blogData = JSON.parse(jsonText) as BlogPostData
+        return blogData
+      } catch (secondParseError: any) {
+        console.error("JSON parse hatası (ikinci deneme):", secondParseError.message)
+        console.error("JSON metni (ilk 500 karakter):", jsonText.substring(0, 500))
+        throw new Error(
+          `JSON parse hatası: ${parseError.message}. ` +
+          `Lütfen Gemini API'nin döndürdüğü JSON formatını kontrol edin. ` +
+          `JSON metni: ${jsonText.substring(0, 200)}...`
+        )
+      }
+    }
   } catch (error: any) {
     console.error("Gemini API error:", error)
     throw new Error(`Blog oluşturma hatası: ${error.message}`)
