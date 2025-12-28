@@ -7,8 +7,9 @@ export const dynamic = 'force-dynamic'
 // URL format: /sitemap-fotougur-com-tr.xml
 export async function GET(
   request: Request,
-  { params }: { params: { domainSlug: string } }
+  context: { params: Promise<{ domainSlug: string }> }
 ) {
+  const params = await context.params
   const domains = getAllDomains()
   
   // Domain slug'ını gerçek domain'e çevir (fotougur-com-tr -> fotougur.com.tr)
