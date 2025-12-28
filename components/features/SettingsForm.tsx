@@ -309,17 +309,31 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
                     <p className="text-sm text-gray-600 mb-2">
                       Site haritanız otomatik olarak oluşturulmaktadır:
                     </p>
-                    <a
-                      href="/sitemap.xml"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline text-sm font-mono break-all"
-                    >
-                      /sitemap.xml
-                    </a>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Tüm domain&apos;ler için URL&apos;ler tek bir sitemap&apos;te birleştirilir
-                    </p>
+                    <div className="space-y-2">
+                      <div>
+                        <a
+                          href="/sitemap.xml"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline text-sm font-mono break-all font-medium"
+                        >
+                          /sitemap.xml
+                        </a>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Ana sitemap index - tüm domain sitemap&apos;lerini listeler
+                        </p>
+                      </div>
+                      <div className="mt-2 pt-2 border-t border-gray-200">
+                        <p className="text-xs text-gray-600 mb-1 font-medium">
+                          Her domain için ayrı sitemap:
+                        </p>
+                        <ul className="text-xs text-gray-500 space-y-1 list-disc list-inside">
+                          <li>/sitemap-fotougur-com-tr.xml (fotougur.com.tr)</li>
+                          <li>/sitemap-dugunkarem-com-tr.xml (dugunkarem.com.tr)</li>
+                          <li>/sitemap-dugunkarem-com.xml (dugunkarem.com)</li>
+                        </ul>
+                      </div>
+                    </div>
                   </div>
                   <div className="p-4 bg-gray-50 rounded-md">
                     <p className="text-sm text-gray-600 mb-2">Robots.txt dosyanız:</p>
