@@ -104,15 +104,24 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
       const data = await response.json()
 
       if (response.ok && data.success) {
-        setSitemapStatus({
-          status: "success",
-          message: `${data.domains} domain için site haritası başarıyla arama motorlarına gönderildi!`,
-          results: data.sitemaps,
-        })
+        if (data.domains === 0) {
+          setSitemapStatus({
+            status: "error",
+            message: "Domain bulunamadı! Lütfen .env dosyasına NEXT_PUBLIC_SITE_URLS ekleyin.",
+            details: data.message,
+          })
+        } else {
+          setSitemapStatus({
+            status: "success",
+            message: `${data.domains} domain için site haritası başarıyla arama motorlarına gönderildi!`,
+            results: data.sitemaps,
+          })
+        }
       } else {
         setSitemapStatus({
           status: "error",
-          message: data.error || "Site haritası gönderilirken bir hata oluştu.",
+          message: data.message || data.error || "Site haritası gönderilirken bir hata oluştu.",
+          details: data.message,
         })
       }
     } catch (error) {

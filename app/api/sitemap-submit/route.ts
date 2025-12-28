@@ -73,6 +73,19 @@ export async function GET(request: Request) {
   }
 
   const domains = getAllDomains()
+  
+  // Domain kontrolü
+  if (domains.length === 0) {
+    return NextResponse.json({
+      success: false,
+      error: "Domain bulunamadı",
+      message: "Lütfen .env dosyasına NEXT_PUBLIC_SITE_URLS veya NEXT_PUBLIC_SITE_URL ekleyin. Örnek: NEXT_PUBLIC_SITE_URLS=https://fotougur.com.tr,https://dugunkarem.com.tr,https://dugunkarem.com",
+      domains: 0,
+      sitemaps: [],
+      timestamp: new Date().toISOString(),
+    }, { status: 400 })
+  }
+  
   const allResults: any[] = []
 
   // Her domain için ayrı sitemap gönder
@@ -109,6 +122,19 @@ export async function POST(request: Request) {
   }
 
   const domains = getAllDomains()
+  
+  // Domain kontrolü
+  if (domains.length === 0) {
+    return NextResponse.json({
+      success: false,
+      error: "Domain bulunamadı",
+      message: "Lütfen .env dosyasına NEXT_PUBLIC_SITE_URLS veya NEXT_PUBLIC_SITE_URL ekleyin. Örnek: NEXT_PUBLIC_SITE_URLS=https://fotougur.com.tr,https://dugunkarem.com.tr,https://dugunkarem.com",
+      domains: 0,
+      sitemaps: [],
+      timestamp: new Date().toISOString(),
+    }, { status: 400 })
+  }
+  
   const allResults: any[] = []
 
   // Her domain için ayrı sitemap gönder
