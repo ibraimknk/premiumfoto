@@ -1,16 +1,19 @@
 import { MetadataRoute } from 'next'
-import { getAllDomains, generateSitemapUrls } from '@/lib/sitemap-utils'
+import { getAllDomains } from '@/lib/sitemap-utils'
 
+// Ana sitemap index - tüm domain sitemap'lerini listeler
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const domains = getAllDomains()
-  const allUrls: MetadataRoute.Sitemap = []
-
-  // Her domain için sitemap URL'lerini oluştur
-  for (const domain of domains) {
-    const urls = await generateSitemapUrls(domain)
-    allUrls.push(...urls)
-  }
-
-  return allUrls
+  
+  // Her domain için ayrı sitemap referansı oluştur
+  return domains.map(domain => {
+    const domainSlug = domain.replace(/https?:\/\//, '').replace(/\./g, '-').replace(/\//g, '')
+    return {
+      url: `${domain}/sitemap-${domainSlug}.xml`,
+      lastModified: new Date(),
+      changeFrequency: 'daily' as const,
+      priority: 1.0,
+    }
+  })
 }
 
