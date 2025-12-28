@@ -91,7 +91,7 @@ export async function GET(request: Request) {
   // Her domain için ayrı sitemap gönder
   for (const domain of domains) {
     const domainSlug = domain.replace(/https?:\/\//, '').replace(/\./g, '-').replace(/\//g, '')
-    const sitemapUrl = `${domain}/sitemap-${domainSlug}.xml`
+    const sitemapUrl = `${domain}/api/sitemap/${domainSlug}`
     
     const results = await Promise.all([
       submitSitemap("google", sitemapUrl),
@@ -140,7 +140,7 @@ export async function POST(request: Request) {
   // Her domain için ayrı sitemap gönder
   for (const domain of domains) {
     const domainSlug = domain.replace(/https?:\/\//, '').replace(/\./g, '-').replace(/\//g, '')
-    const sitemapUrl = `${domain}/sitemap-${domainSlug}.xml`
+    const sitemapUrl = `${domain}/api/sitemap/${domainSlug}`
     
     const results = await Promise.all([
       submitSitemap("google", sitemapUrl),

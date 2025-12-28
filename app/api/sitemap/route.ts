@@ -4,7 +4,7 @@ import { getAllDomains } from "@/lib/sitemap-utils"
 export const dynamic = 'force-dynamic'
 
 // Ana sitemap index - tüm domain sitemap'lerini listeler
-// /sitemap.xml route'u /api/sitemap'e yönlendiriyor
+// URL: /api/sitemap
 export async function GET() {
   const domains = getAllDomains()
   
