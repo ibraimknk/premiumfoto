@@ -8,7 +8,9 @@ export function getAllDomains(): string[] {
   const domainsEnv = process.env.NEXT_PUBLIC_SITE_URLS || process.env.NEXT_PUBLIC_SITE_URL || ""
   
   if (!domainsEnv) {
-    return ["https://fotougur.com"] // Fallback
+    // Fallback yok - kullanıcı domain'leri .env dosyasında tanımlamalı
+    console.warn("⚠️ NEXT_PUBLIC_SITE_URLS veya NEXT_PUBLIC_SITE_URL tanımlı değil. Lütfen .env dosyasına domain'lerinizi ekleyin.")
+    return []
   }
 
   // Virgülle ayrılmış domain'leri parse et
@@ -24,7 +26,7 @@ export function getAllDomains(): string[] {
       return d
     })
 
-  return domains.length > 0 ? domains : ["https://fotougur.com"]
+  return domains
 }
 
 /**
