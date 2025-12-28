@@ -61,6 +61,7 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
     status: "idle" | "success" | "error"
     message?: string
     results?: any
+    details?: string
   }>({ status: "idle" })
 
   const handleSubmit = async (e: React.FormEvent) => {
