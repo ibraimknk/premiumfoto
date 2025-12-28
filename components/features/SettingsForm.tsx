@@ -432,8 +432,17 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
                     </div>
                   )}
                   {sitemapStatus.status === "error" && (
-                    <div className="p-4 bg-red-50 text-red-800 rounded-md">
+                    <div className="p-4 bg-red-50 text-red-800 rounded-md space-y-2">
                       <p className="font-medium">❌ {sitemapStatus.message}</p>
+                      {sitemapStatus.details && (
+                        <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
+                          <p className="font-semibold mb-1">💡 Çözüm:</p>
+                          <p className="mb-2">{sitemapStatus.details}</p>
+                          <code className="block bg-gray-100 p-2 rounded mt-2 break-all">
+                            NEXT_PUBLIC_SITE_URLS=https://fotougur.com.tr,https://dugunkarem.com.tr,https://dugunkarem.com
+                          </code>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
