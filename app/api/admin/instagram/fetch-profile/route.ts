@@ -162,43 +162,55 @@ export async function POST(request: Request) {
       let imported = 0
 
       for (const file of imageFiles) {
-        // Dosya yolu düzelt (alt klasörler için)
-        const filePath = file.includes('/') ? file : file
-        const sourcePath = join(tempDir, filePath)
-        
-        // Dosya var mı kontrol et
-        if (!existsSync(sourcePath)) {
-          console.warn(`Dosya bulunamadı: ${sourcePath}`)
+        try {
+          // Dosya yolu düzelt (alt klasörler için)
+          const filePath = file.includes('/') ? file : file
+          const sourcePath = join(tempDir, filePath)
+          
+          // Dosya var mı kontrol et
+          if (!existsSync(sourcePath)) {
+            console.warn(`Dosya bulunamadı: ${sourcePath}`)
+            continue
+          }
+          
+          // Dosya adını temizle (sadece dosya adını al, klasör yolunu kaldır)
+          const fileName = file.includes('/') ? file.split('/').pop() || file : file
+          const timestamp = Date.now()
+          const randomStr = Math.random().toString(36).substring(7)
+          const newFileName = `instagram-${instagramUsername}-${timestamp}-${randomStr}-${fileName}`
+          const targetPath = join(uploadDir, newFileName)
+          
+          // Dosyayı kopyala
+          await copyFile(sourcePath, targetPath)
+          
+          // Dosyanın kopyalandığını doğrula
+          if (!existsSync(targetPath)) {
+            console.warn(`Dosya kopyalanamadı: ${targetPath}`)
+            continue
+          }
+          
+          // URL oluştur
+          const url = `/uploads/${newFileName}`
+          
+          // Veritabanına ekle
+          await prisma.media.create({
+            data: {
+              title: `Instagram - ${instagramUsername}`,
+              url,
+              type: "photo",
+              category: "Instagram",
+              thumbnail: url,
+              isActive: true,
+              order: 0,
+            },
+          })
+          
+          imported++
+          console.log(`✅ İşlendi: ${fileName} (${imported}/${imageFiles.length})`)
+        } catch (error: any) {
+          console.error(`❌ Hata (${file}):`, error.message)
           continue
         }
-        
-        // Dosya adını temizle (sadece dosya adını al, klasör yolunu kaldır)
-        const fileName = file.includes('/') ? file.split('/').pop() || file : file
-        const timestamp = Date.now()
-        const randomStr = Math.random().toString(36).substring(7)
-        const newFileName = `instagram-${instagramUsername}-${timestamp}-${randomStr}-${fileName}`
-        const targetPath = join(uploadDir, newFileName)
-        
-        // Dosyayı kopyala
-        await copyFile(sourcePath, targetPath)
-        
-        // URL oluştur
-        const url = `/uploads/${newFileName}`
-        
-        // Veritabanına ekle
-        await prisma.media.create({
-          data: {
-            title: `Instagram - ${instagramUsername}`,
-            url,
-            type: "photo",
-            category: "Instagram",
-            thumbnail: url,
-            isActive: true,
-            order: 0,
-          },
-        })
-        
-        imported++
       }
 
       // Geçici klasörü temizle
