@@ -118,12 +118,36 @@ export async function POST(request: Request) {
         })
       }
 
-      const files = await readdir(tempDir)
+      // Recursive dosya tarama (alt klasörleri de kontrol et)
+      const getAllFiles = async (dir: string, basePath: string = ''): Promise<string[]> => {
+        const files: string[] = []
+        try {
+          const entries = await readdir(dir, { withFileTypes: true })
+          for (const entry of entries) {
+            const fullPath = join(dir, entry.name)
+            const relativePath = basePath ? join(basePath, entry.name) : entry.name
+            
+            if (entry.isDirectory()) {
+              const subFiles = await getAllFiles(fullPath, relativePath)
+              files.push(...subFiles)
+            } else {
+              files.push(relativePath)
+            }
+          }
+        } catch (error) {
+          console.error(`Error scanning directory ${dir}:`, error)
+        }
+        return files
+      }
+      
+      const allFiles = await getAllFiles(tempDir)
       
       // Sadece görsel dosyalarını filtrele
-      const imageFiles = files.filter((file: string) => 
+      const imageFiles = allFiles.filter((file: string) => 
         file.endsWith('.jpg') || file.endsWith('.jpeg') || file.endsWith('.png')
       )
+      
+      console.log(`Toplam ${allFiles.length} dosya bulundu, ${imageFiles.length} görsel dosyası`)
 
       if (imageFiles.length === 0) {
         // Geçici klasörü temizle
