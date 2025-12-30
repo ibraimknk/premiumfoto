@@ -175,7 +175,7 @@ export function GalleryList({ media, isAdmin = false, filterCategory }: GalleryL
                     className="w-5 h-5 cursor-pointer"
                   />
                 </div>
-            <div className="relative aspect-square">
+                <div className="relative aspect-square">
               {item.type === "photo" ? (
                 <Image
                   src={item.url}
@@ -204,6 +204,7 @@ export function GalleryList({ media, isAdmin = false, filterCategory }: GalleryL
                 ) : (
                   <Video className="h-5 w-5 text-white bg-black/50 rounded p-1" />
                 )}
+              </div>
               </div>
             </div>
             <CardHeader>
@@ -244,8 +245,9 @@ export function GalleryList({ media, isAdmin = false, filterCategory }: GalleryL
                 </div>
               </div>
             </CardContent>
-          </Card>
-        ))}
+            </Card>
+          ))}
+        </div>
       </div>
     )
   }
