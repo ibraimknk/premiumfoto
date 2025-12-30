@@ -16,7 +16,9 @@
     "fix-uploads": "bash scripts/fix-all-uploads.sh",
     "test-nginx": "bash scripts/test-nginx-uploads.sh",
     "fix-nginx": "bash scripts/fix-nginx-uploads.sh",
-    "fix-nginx-final": "bash scripts/fix-nginx-config-final.sh"
+    "fix-nginx-final": "bash scripts/fix-nginx-config-final.sh",
+    "fix-nginx-permissions": "bash scripts/fix-nginx-permissions.sh",
+    "fix-nginx-config": "bash scripts/fix-nginx-config-clean.sh"
   },
   "dependencies": {
     "next": "^14.2.0",
