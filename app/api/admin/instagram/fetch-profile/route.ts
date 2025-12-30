@@ -1,11 +1,18 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
+import { exec } from "child_process"
+import { promisify } from "util"
+import { writeFile, mkdir, readdir, copyFile, rm } from "fs/promises"
+import { join } from "path"
+import { existsSync } from "fs"
+
+const execAsync = promisify(exec)
 
 export const dynamic = 'force-dynamic'
 
-// Instagram profilinden tüm gönderileri çek
-// Not: Instagram'ın resmi API'si olmadan bu zor, alternatif yöntemler kullanılmalı
+// Instagram profilinden tüm gönderileri çek ve galeriye ekle
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions)
@@ -14,44 +21,151 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { profileUrl } = body
+    const { profileUrl, username } = body
 
-    if (!profileUrl) {
-      return NextResponse.json({ error: "Instagram profil URL'si gerekli" }, { status: 400 })
+    if (!profileUrl && !username) {
+      return NextResponse.json({ error: "Instagram profil URL'si veya kullanıcı adı gerekli" }, { status: 400 })
     }
 
-    // Instagram profil URL'sinden kullanıcı adını çıkar
-    // Format: https://www.instagram.com/username/ veya instagram.com/username
-    const usernameMatch = profileUrl.match(/instagram\.com\/([^\/\?]+)/)
-    if (!usernameMatch) {
+    // Kullanıcı adını çıkar
+    let instagramUsername = username
+    if (!instagramUsername && profileUrl) {
+      const usernameMatch = profileUrl.match(/instagram\.com\/([^\/\?]+)/)
+      if (usernameMatch) {
+        instagramUsername = usernameMatch[1].replace(/\/$/, '')
+      }
+    }
+
+    if (!instagramUsername) {
       return NextResponse.json({ 
-        error: "Geçersiz Instagram profil URL'si. Örnek: https://www.instagram.com/dugunkaremcom/" 
+        error: "Geçersiz Instagram profil URL'si. Örnek: https://www.instagram.com/dugunkaremcom/ veya dugunkaremcom" 
       }, { status: 400 })
     }
 
-    const username = usernameMatch[1].replace(/\/$/, '') // Trailing slash'i kaldır
+    instagramUsername = instagramUsername.replace(/^@/, '').replace(/\/$/, '')
 
-    // Instagram'dan içerik çekmek için alternatif yöntemler:
-    // 1. Instagram Graph API (Business Account gerekir)
-    // 2. Web scraping (Instagram'ın ToS'una aykırı olabilir)
-    // 3. Üçüncü parti servisler
-    
-    // Şimdilik kullanıcıya manuel indirme talimatı ver
-    return NextResponse.json({
-      success: false,
-      message: "Instagram'dan otomatik içerik çekmek için Instagram Graph API veya üçüncü parti araçlar gerekir.",
-      username,
-      instructions: [
-        "1. Instagram içeriklerini indirmek için bir araç kullanın:",
-        "   - Instaloader (komut satırı): pip install instaloader",
-        "   - 4K Stogram (GUI): https://www.4kdownload.com/products/stogram",
-        "   - DownloadGram (web): https://downloadgram.com/",
-        "",
-        "2. İndirilen dosyaları buraya yükleyin veya",
-        "3. İndirilen dosyaların URL'lerini toplu olarak yapıştırın"
-      ],
-      alternative: "Alternatif olarak, Instagram içeriklerini manuel olarak indirip toplu yükleme özelliğini kullanabilirsiniz."
-    })
+    // Instaloader ile Instagram içeriklerini indir
+    // Not: Bu için sunucuda Python ve Instaloader kurulu olmalı
+    try {
+      console.log(`Instagram içerikleri indiriliyor: @${instagramUsername}`)
+      
+      // Uploads klasörünü oluştur
+      const uploadDir = join(process.cwd(), "public", "uploads")
+      if (!existsSync(uploadDir)) {
+        await mkdir(uploadDir, { recursive: true })
+      }
+
+      // Instaloader komutunu çalıştır
+      // --no-videos: Sadece görselleri indir (videoları atla - opsiyonel)
+      // --no-captions: Caption'ları indirme
+      // --no-metadata-json: Metadata JSON dosyalarını indirme
+      // --no-profile-pic: Profil fotoğrafını indirme
+      // --dirname-pattern: İndirme klasörü
+      const tempDir = join(uploadDir, `instagram-${instagramUsername}-temp`)
+      const command = `instaloader --no-videos --no-captions --no-metadata-json --no-profile-pic --dirname-pattern="${tempDir}" ${instagramUsername}`
+      
+      const { stdout, stderr } = await execAsync(command, {
+        cwd: process.cwd(),
+        timeout: 300000, // 5 dakika timeout
+      })
+
+      console.log('Instaloader çıktısı:', stdout)
+      if (stderr) {
+        console.warn('Instaloader uyarıları:', stderr)
+      }
+
+      // İndirilen dosyaları bul ve veritabanına ekle
+      if (!existsSync(tempDir)) {
+        return NextResponse.json({
+          success: false,
+          message: "Dosyalar indirilemedi. Instaloader kurulu olmayabilir veya profil bulunamadı.",
+          instructions: [
+            "1. Sunucuda Python kurulu olmalı: python3 --version",
+            "2. Instaloader kurun: pip3 install instaloader",
+            "3. Alternatif: Instagram içeriklerini manuel olarak indirip toplu yükleme özelliğini kullanın"
+          ]
+        })
+      }
+
+      const files = await readdir(tempDir)
+      
+      // Sadece görsel dosyalarını filtrele
+      const imageFiles = files.filter((file: string) => 
+        file.endsWith('.jpg') || file.endsWith('.jpeg') || file.endsWith('.png')
+      )
+
+      if (imageFiles.length === 0) {
+        // Geçici klasörü temizle
+        await rm(tempDir, { recursive: true, force: true })
+        return NextResponse.json({
+          success: false,
+          message: "İndirilen görsel dosyası bulunamadı",
+        })
+      }
+
+      // Dosyaları public/uploads klasörüne taşı ve veritabanına ekle
+      let imported = 0
+
+      for (const file of imageFiles) {
+        const sourcePath = join(tempDir, file)
+        const timestamp = Date.now()
+        const newFileName = `instagram-${instagramUsername}-${timestamp}-${Math.random().toString(36).substring(7)}-${file}`
+        const targetPath = join(uploadDir, newFileName)
+        
+        // Dosyayı kopyala
+        await copyFile(sourcePath, targetPath)
+        
+        // URL oluştur
+        const url = `/uploads/${newFileName}`
+        
+        // Veritabanına ekle
+        await prisma.media.create({
+          data: {
+            title: `Instagram - ${instagramUsername}`,
+            url,
+            type: "photo",
+            category: "Instagram",
+            thumbnail: url,
+            isActive: true,
+            order: 0,
+          },
+        })
+        
+        imported++
+      }
+
+      // Geçici klasörü temizle
+      await rm(tempDir, { recursive: true, force: true })
+
+      return NextResponse.json({
+        success: true,
+        message: `${imported} içerik başarıyla indirildi ve galeriye eklendi`,
+        imported,
+        username: instagramUsername,
+      })
+
+    } catch (error: any) {
+      // Instaloader kurulu değilse veya hata varsa
+      if (error.code === 'ENOENT' || error.message.includes('instaloader') || error.message.includes('command not found')) {
+        return NextResponse.json({
+          success: false,
+          message: "Instaloader bulunamadı. Lütfen sunucuda kurun.",
+          instructions: [
+            "1. Python kurulu olmalı: python3 --version",
+            "2. Instaloader kurun: pip3 install instaloader",
+            "3. Alternatif: Instagram içeriklerini manuel olarak indirip toplu yükleme özelliğini kullanın"
+          ],
+          alternative: "Alternatif olarak, Instagram içeriklerini manuel olarak indirip toplu yükleme özelliğini kullanabilirsiniz."
+        })
+      }
+
+      console.error("Instagram download error:", error)
+      return NextResponse.json({
+        success: false,
+        message: error.message || "İçerikler indirilemedi",
+        error: error.message,
+      })
+    }
 
   } catch (error: any) {
     console.error("Instagram profile fetch error:", error)
@@ -61,4 +175,3 @@ export async function POST(request: Request) {
     )
   }
 }
-
