@@ -236,10 +236,18 @@ if [ -d ".next" ]; then
     echo -e "${GREEN}✅ Build tamamlandı ve izinler ayarlandı${NC}"
 fi
 
-# Uploads dizini oluşturma
-echo -e "${YELLOW}📁 Uploads dizini oluşturuluyor...${NC}"
+# Uploads dizini oluşturma ve izinleri düzeltme
+echo -e "${YELLOW}📁 Uploads dizini oluşturuluyor ve izinler ayarlanıyor...${NC}"
 mkdir -p public/uploads
+# Klasör izinleri: 755 (rwxr-xr-x)
 chmod 755 public/uploads
+# Dosyalar için: 644 (rw-r--r--)
+find public/uploads -type f -exec chmod 644 {} \; 2>/dev/null || true
+# Klasörler için: 755
+find public/uploads -type d -exec chmod 755 {} \; 2>/dev/null || true
+# Nginx'in okuyabilmesi için tüm kullanıcılara okuma izni
+chmod -R a+r public/uploads 2>/dev/null || true
+echo -e "${GREEN}✅ Uploads dizini ve izinler hazır${NC}"
 
 # PM2 ile uygulamayı başlatma/durdurma
 cd ${APP_DIR}
