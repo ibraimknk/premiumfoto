@@ -20,6 +20,12 @@ export default async function AdminGalleryPage() {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" asChild>
+            <Link href="/admin/gallery/instagram-import">
+              <Plus className="mr-2 h-4 w-4" />
+              Instagram&apos;dan İçe Aktar
+            </Link>
+          </Button>
+          <Button variant="outline" asChild>
             <Link href="/admin/gallery/new">
               <Plus className="mr-2 h-4 w-4" />
               Manuel Ekle
