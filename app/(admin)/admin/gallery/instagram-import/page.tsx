@@ -8,15 +8,64 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Textarea } from "@/components/ui/textarea"
 
 export default function InstagramImportPage() {
-  const [instagramUrl, setInstagramUrl] = useState("")
+  const [profileUrl, setProfileUrl] = useState("https://www.instagram.com/dugunkaremcom/")
   const [mediaUrls, setMediaUrls] = useState("")
   const [category, setCategory] = useState("Instagram")
   const [isImporting, setIsImporting] = useState(false)
+  const [isFetching, setIsFetching] = useState(false)
   const [status, setStatus] = useState<{
     type: "idle" | "success" | "error"
     message?: string
     details?: any
   }>({ type: "idle" })
+
+  const handleFetchProfile = async () => {
+    if (!profileUrl.trim()) {
+      setStatus({
+        type: "error",
+        message: "Lütfen Instagram profil URL'sini girin",
+      })
+      return
+    }
+
+    setIsFetching(true)
+    setStatus({ type: "idle" })
+
+    try {
+      const response = await fetch("/api/admin/instagram/fetch-profile", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          profileUrl,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        // Şimdilik manuel indirme talimatı göster
+        setStatus({
+          type: "error",
+          message: data.message || "Instagram'dan otomatik içerik çekmek için ek araçlar gerekir",
+          details: data.instructions,
+        })
+      } else {
+        setStatus({
+          type: "error",
+          message: data.error || "Profil bilgileri alınamadı",
+        })
+      }
+    } catch (error: any) {
+      setStatus({
+        type: "error",
+        message: "Bir hata oluştu: " + error.message,
+      })
+    } finally {
+      setIsFetching(false)
+    }
+  }
 
   const handleImportFromUrls = async () => {
     if (!mediaUrls.trim()) {
@@ -92,8 +141,33 @@ export default function InstagramImportPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Yöntem 1: URL Listesi */}
-          <div className="space-y-4">
+          {/* Yöntem 1: Profil URL'si ile Otomatik Çekme */}
+          <div className="space-y-4 p-4 bg-blue-50 rounded-md">
+            <div>
+              <Label htmlFor="profileUrl">Instagram Profil URL&apos;si</Label>
+              <Input
+                id="profileUrl"
+                value={profileUrl}
+                onChange={(e) => setProfileUrl(e.target.value)}
+                placeholder="https://www.instagram.com/dugunkaremcom/"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Instagram profil URL&apos;sini girin (örn: https://www.instagram.com/dugunkaremcom/)
+              </p>
+            </div>
+
+            <Button
+              onClick={handleFetchProfile}
+              disabled={isFetching}
+              className="w-full"
+            >
+              {isFetching ? "Profil Bilgileri Alınıyor..." : "Profil İçeriklerini Çek"}
+            </Button>
+          </div>
+
+          {/* Yöntem 2: URL Listesi ile Toplu İçe Aktarma */}
+          <div className="space-y-4 border-t pt-6">
+            <h3 className="font-medium">Toplu İçe Aktarma (URL Listesi)</h3>
             <div>
               <Label htmlFor="mediaUrls">Medya URL&apos;leri (Her satıra bir URL)</Label>
               <Textarea
