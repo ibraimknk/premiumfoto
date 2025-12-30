@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
-import { Edit } from "lucide-react"
+import { Edit, Trash2 } from "lucide-react"
 import { DeleteButton } from "@/components/features/DeleteButton"
 import Image from "next/image"
 import { ImageIcon, Video, Play } from "lucide-react"
@@ -30,6 +30,8 @@ interface GalleryListProps {
 export function GalleryList({ media, isAdmin = false, filterCategory }: GalleryListProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const [filteredMedia, setFilteredMedia] = useState(media)
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
     if (filterCategory && filterCategory !== "Tümü") {
@@ -39,11 +41,140 @@ export function GalleryList({ media, isAdmin = false, filterCategory }: GalleryL
     }
   }, [filterCategory, media])
 
+  const handleSelectAll = () => {
+    if (selectedIds.length === media.length) {
+      setSelectedIds([])
+    } else {
+      setSelectedIds(media.map(item => item.id))
+    }
+  }
+
+  const handleSelectItem = (id: string) => {
+    if (selectedIds.includes(id)) {
+      setSelectedIds(selectedIds.filter(selectedId => selectedId !== id))
+    } else {
+      setSelectedIds([...selectedIds, id])
+    }
+  }
+
+  const handleDeleteSelected = async () => {
+    if (selectedIds.length === 0) return
+    
+    const message = selectedIds.length === media.length
+      ? "Tüm galeriyi silmek istediğinize emin misiniz? Bu işlem geri alınamaz!"
+      : `${selectedIds.length} medyayı silmek istediğinize emin misiniz?`
+    
+    if (!confirm(message)) return
+
+    setIsDeleting(true)
+    try {
+      const response = await fetch("/api/admin/gallery/bulk-delete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ids: selectedIds,
+        }),
+      })
+
+      const data = await response.json()
+      if (response.ok && data.success) {
+        setSelectedIds([])
+        window.location.reload()
+      } else {
+        alert(data.error || "Silme işlemi başarısız oldu")
+      }
+    } catch (error) {
+      alert("Bir hata oluştu")
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  const handleDeleteAll = async () => {
+    if (!confirm("TÜM GALERİYİ SİLMEK İSTEDİĞİNİZE EMİN MİSİNİZ? Bu işlem geri alınamaz!")) return
+
+    setIsDeleting(true)
+    try {
+      const response = await fetch("/api/admin/gallery/bulk-delete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          deleteAll: true,
+        }),
+      })
+
+      const data = await response.json()
+      if (response.ok && data.success) {
+        setSelectedIds([])
+        window.location.reload()
+      } else {
+        alert(data.error || "Silme işlemi başarısız oldu")
+      }
+    } catch (error) {
+      alert("Bir hata oluştu")
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
   if (isAdmin) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {media.map((item) => (
-          <Card key={item.id} className="overflow-hidden">
+      <div className="space-y-4">
+        {/* Toplu İşlem Butonları */}
+        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+          <div className="flex items-center gap-4">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={selectedIds.length === media.length && media.length > 0}
+                onChange={handleSelectAll}
+                className="w-4 h-4"
+              />
+              <span className="text-sm font-medium">
+                Tümünü Seç ({selectedIds.length}/{media.length})
+              </span>
+            </label>
+            {selectedIds.length > 0 && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleDeleteSelected}
+                disabled={isDeleting}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Seçilenleri Sil ({selectedIds.length})
+              </Button>
+            )}
+          </div>
+          {media.length > 0 && (
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleDeleteAll}
+              disabled={isDeleting}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Tümünü Sil
+            </Button>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {media.map((item) => (
+            <Card key={item.id} className={`overflow-hidden ${selectedIds.includes(item.id) ? 'ring-2 ring-blue-500' : ''}`}>
+              <div className="relative">
+                <div className="absolute top-2 left-2 z-10">
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.includes(item.id)}
+                    onChange={() => handleSelectItem(item.id)}
+                    className="w-5 h-5 cursor-pointer"
+                  />
+                </div>
             <div className="relative aspect-square">
               {item.type === "photo" ? (
                 <Image
