@@ -95,15 +95,17 @@ export async function POST(request: Request) {
       
       const { stdout, stderr } = await execAsync(command, {
         cwd: process.cwd(),
-        timeout: 300000, // 5 dakika timeout
+        timeout: 600000, // 10 dakika timeout (çok sayıda görsel için)
       })
 
       console.log('Instaloader çıktısı:', stdout)
       if (stderr) {
         console.warn('Instaloader uyarıları:', stderr)
+        // 403 hatası olsa bile indirilen dosyalar varsa devam et
       }
 
       // İndirilen dosyaları bul ve veritabanına ekle
+      // 403 hatası olsa bile indirilen dosyalar varsa işle
       if (!existsSync(tempDir)) {
         return NextResponse.json({
           success: false,
@@ -136,9 +138,21 @@ export async function POST(request: Request) {
       let imported = 0
 
       for (const file of imageFiles) {
-        const sourcePath = join(tempDir, file)
+        // Dosya yolu düzelt (alt klasörler için)
+        const filePath = file.includes('/') ? file : file
+        const sourcePath = join(tempDir, filePath)
+        
+        // Dosya var mı kontrol et
+        if (!existsSync(sourcePath)) {
+          console.warn(`Dosya bulunamadı: ${sourcePath}`)
+          continue
+        }
+        
+        // Dosya adını temizle (sadece dosya adını al, klasör yolunu kaldır)
+        const fileName = file.includes('/') ? file.split('/').pop() || file : file
         const timestamp = Date.now()
-        const newFileName = `instagram-${instagramUsername}-${timestamp}-${Math.random().toString(36).substring(7)}-${file}`
+        const randomStr = Math.random().toString(36).substring(7)
+        const newFileName = `instagram-${instagramUsername}-${timestamp}-${randomStr}-${fileName}`
         const targetPath = join(uploadDir, newFileName)
         
         // Dosyayı kopyala
