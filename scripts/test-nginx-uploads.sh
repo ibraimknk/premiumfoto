@@ -47,8 +47,14 @@ echo ""
 
 # Localhost üzerinden test
 echo "🌐 Localhost üzerinden test:"
+echo "   Test URL: http://localhost$FILE_PATH"
 HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost$FILE_PATH")
 echo "   HTTP Status: $HTTP_CODE"
+
+# Nginx error log kontrolü
+echo ""
+echo "📋 Nginx error log (son 5 satır):"
+sudo tail -5 /var/log/nginx/error.log 2>/dev/null || echo "   ⚠️ Error log okunamadı"
 
 if [ "$HTTP_CODE" = "200" ]; then
     echo "   ✅ Dosya erişilebilir!"
