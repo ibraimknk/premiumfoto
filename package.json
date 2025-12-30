@@ -23,7 +23,8 @@
     "fix-nginx-path": "bash scripts/fix-nginx-path-permissions.sh",
     "test-nginx-debug": "bash scripts/test-nginx-debug.sh",
     "fix-nginx-location": "bash scripts/fix-nginx-location.sh",
-    "install-instaloader": "bash scripts/install-instaloader.sh"
+    "install-instaloader": "bash scripts/install-instaloader.sh",
+    "fix-pm2-env": "bash scripts/fix-pm2-env.sh"
   },
   "dependencies": {
     "next": "^14.2.0",

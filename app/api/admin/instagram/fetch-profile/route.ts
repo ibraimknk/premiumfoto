@@ -66,18 +66,16 @@ export async function POST(request: Request) {
            // Instaloader'ı bul (pipx, virtual env, sistem PATH)
            const homeDir = process.env.HOME || '/home/ibrahim'
            
-           // Önce which/command -v ile sistem PATH'te ara
+           // Önce .local/bin'de kontrol et (en yaygın konum)
+           const localBinPath = join(homeDir, '.local', 'bin', 'instaloader')
            let instaloaderCmd = 'instaloader'
-           try {
-             const { stdout } = await execAsync('which instaloader 2>/dev/null || command -v instaloader 2>/dev/null', { timeout: 2000 })
-             if (stdout.trim()) {
-               instaloaderCmd = stdout.trim()
-               console.log(`✅ Instaloader bulundu (PATH): ${instaloaderCmd}`)
-             }
-           } catch {
-             // PATH'te bulunamadı, alternatif yolları dene
+           
+           if (existsSync(localBinPath)) {
+             instaloaderCmd = localBinPath
+             console.log(`✅ Instaloader bulundu (.local/bin): ${instaloaderCmd}`)
+           } else {
+             // Alternatif yolları dene
              const instaloaderPaths = [
-               join(homeDir, '.local', 'bin', 'instaloader'), // pipx ile kurulduysa
                join(homeDir, 'instagram-env', 'bin', 'instaloader'), // virtual env
                '/usr/local/bin/instaloader',
                '/usr/bin/instaloader',
@@ -86,19 +84,41 @@ export async function POST(request: Request) {
              for (const path of instaloaderPaths) {
                if (existsSync(path)) {
                  instaloaderCmd = path
-                 console.log(`✅ Instaloader bulundu (dosya): ${instaloaderCmd}`)
+                 console.log(`✅ Instaloader bulundu (alternatif): ${instaloaderCmd}`)
                  break
+               }
+             }
+             
+             // Son olarak which/command -v ile sistem PATH'te ara
+             if (instaloaderCmd === 'instaloader') {
+               try {
+                 const { stdout } = await execAsync('which instaloader 2>/dev/null || command -v instaloader 2>/dev/null', { 
+                   timeout: 2000,
+                   env: { ...process.env, PATH: `${join(homeDir, '.local', 'bin')}:${process.env.PATH || ''}` }
+                 })
+                 if (stdout.trim()) {
+                   instaloaderCmd = stdout.trim()
+                   console.log(`✅ Instaloader bulundu (PATH): ${instaloaderCmd}`)
+                 }
+               } catch (error) {
+                 console.warn('Instaloader PATH\'te bulunamadı:', error)
                }
              }
            }
            
-           // Eğer hala bulunamadıysa, PATH'e .local/bin ekleyerek dene
-           if (instaloaderCmd === 'instaloader') {
-             const localBinPath = join(homeDir, '.local', 'bin', 'instaloader')
-             if (existsSync(localBinPath)) {
-               instaloaderCmd = localBinPath
-               console.log(`✅ Instaloader bulundu (.local/bin): ${instaloaderCmd}`)
-             }
+           // Eğer hala bulunamadıysa hata ver
+           if (instaloaderCmd === 'instaloader' && !existsSync(localBinPath)) {
+             console.error('❌ Instaloader bulunamadı!')
+             return NextResponse.json({
+               success: false,
+               message: "Instaloader bulunamadı. Lütfen sunucuda kurun.",
+               instructions: [
+                 "1. npm run install-instaloader komutunu çalıştırın",
+                 "2. VEYA manuel: pipx install instaloader",
+                 "3. PM2'yi restart edin: pm2 restart foto-ugur-app --update-env"
+               ],
+               alternative: "Alternatif olarak, Instagram içeriklerini manuel olarak indirip toplu yükleme özelliğini kullanabilirsiniz."
+             }, { status: 500 })
            }
       
            // PATH'e .local/bin ekle (eğer yoksa)
