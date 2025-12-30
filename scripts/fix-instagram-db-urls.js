@@ -63,13 +63,42 @@ async function fixInstagramDbUrls() {
         // Dosya adı formatı: instagram-{username}-{timestamp}-{random}-{originalName}
         // Orijinal dosya adını çıkar (son kısımdan)
         const parts = urlFileName.split('-')
-        if (parts.length < 5) continue
+        if (parts.length < 5) {
+          // Farklı format, direkt dosya adıyla eşleştir
+          const matchingFile = instagramFiles.find(file => 
+            file === urlFileName || 
+            file.endsWith(urlFileName) ||
+            urlFileName.endsWith(file.split('-').pop() || '')
+          )
+          
+          if (matchingFile) {
+            const newUrl = `/uploads/${matchingFile}`
+            await prisma.media.update({
+              where: { id: record.id },
+              data: { 
+                url: newUrl,
+                thumbnail: newUrl,
+              },
+            })
+            fixed++
+            console.log(`✅ Düzeltildi: ${urlFileName} -> ${matchingFile}`)
+            continue
+          } else {
+            notFound++
+            console.log(`⚠️ Eşleşen dosya bulunamadı: ${urlFileName}`)
+            continue
+          }
+        }
         
         // Orijinal dosya adını bul (son kısım)
         const originalFileName = parts.slice(4).join('-') // 2019-05-25_15-15-54_UTC.jpg gibi
         
         // Bu dosya adını içeren dosyayı bul
-        const matchingFile = instagramFiles.find(file => file.includes(originalFileName))
+        const matchingFile = instagramFiles.find(file => 
+          file.includes(originalFileName) ||
+          originalFileName.includes(file.split('-').pop() || '') ||
+          file.endsWith(originalFileName)
+        )
         
         if (matchingFile) {
           // URL'yi güncelle
@@ -86,6 +115,10 @@ async function fixInstagramDbUrls() {
         } else {
           notFound++
           console.log(`⚠️ Eşleşen dosya bulunamadı: ${urlFileName}`)
+          // Tüm dosyaları listele
+          if (instagramFiles.length > 0) {
+            console.log(`   💡 Mevcut dosyalar: ${instagramFiles.slice(0, 3).join(', ')}...`)
+          }
         }
       }
     } catch (error) {

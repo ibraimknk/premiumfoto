@@ -11,7 +11,9 @@
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
     "submit-sitemap": "tsx scripts/submit-sitemap.ts",
-    "fix-instagram": "node scripts/fix-instagram-db-urls.js"
+    "fix-instagram": "node scripts/fix-instagram-db-urls.js",
+    "check-uploads": "node scripts/check-uploads-status.js",
+    "fix-uploads": "bash scripts/fix-all-uploads.sh"
   },
   "dependencies": {
     "next": "^14.2.0",
