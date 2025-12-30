@@ -22,13 +22,8 @@ const nextConfig = {
       bodySizeLimit: '50mb',
     },
   },
-  // API route body size limit (Next.js App Router için)
-  api: {
-    bodyParser: {
-      sizeLimit: '50mb',
-    },
-    responseLimit: '50mb',
-  },
+  // API routes için body size limit (App Router)
+  // Not: Bu Next.js 14'te geçersiz, serverActions kullanılıyor
 }
 
 module.exports = nextConfig
