@@ -175,25 +175,32 @@ export async function POST(request: Request) {
 
     } catch (error: any) {
       // Instaloader kurulu değilse veya hata varsa
-      if (error.code === 'ENOENT' || error.message.includes('instaloader') || error.message.includes('command not found')) {
+      if (error.code === 'ENOENT' || error.message?.includes('instaloader') || error.message?.includes('command not found')) {
         return NextResponse.json({
           success: false,
           message: "Instaloader bulunamadı. Lütfen sunucuda kurun.",
           instructions: [
-            "1. Python kurulu olmalı: python3 --version",
-            "2. Instaloader kurun: pip3 install instaloader",
-            "3. Alternatif: Instagram içeriklerini manuel olarak indirip toplu yükleme özelliğini kullanın"
+            "1. pipx kur: sudo apt install pipx -y",
+            "2. pipx ensurepath",
+            "3. pipx install instaloader",
+            "4. Alternatif: pip3 install --break-system-packages instaloader",
+            "5. Alternatif: Instagram içeriklerini manuel olarak indirip toplu yükleme özelliğini kullanın"
           ],
           alternative: "Alternatif olarak, Instagram içeriklerini manuel olarak indirip toplu yükleme özelliğini kullanabilirsiniz."
-        })
+        }, { status: 500 })
       }
 
       console.error("Instagram download error:", error)
+      
+      // Hata mesajını güvenli hale getir
+      const errorMessage = error.message || String(error) || "İçerikler indirilemedi"
+      
       return NextResponse.json({
         success: false,
-        message: error.message || "İçerikler indirilemedi",
-        error: error.message,
-      })
+        message: errorMessage,
+        error: errorMessage,
+        code: error.code,
+      }, { status: 500 })
     }
 
   } catch (error: any) {

@@ -52,7 +52,23 @@ export default function InstagramImportPage() {
         }),
       })
 
-      const data = await response.json()
+      // Response'u text olarak oku, sonra JSON'a çevir
+      const responseText = await response.text()
+      let data
+      
+      try {
+        data = JSON.parse(responseText)
+      } catch (parseError) {
+        // HTML veya başka bir format döndüyse
+        console.error('JSON parse error:', parseError, 'Response:', responseText.substring(0, 200))
+        setStatus({
+          type: "error",
+          message: "Sunucu hatası: Geçersiz yanıt formatı. Lütfen sunucu loglarını kontrol edin.",
+          details: responseText.substring(0, 500),
+        })
+        setIsFetching(false)
+        return
+      }
 
       if (response.ok && data.success) {
         setStatus({
@@ -64,7 +80,7 @@ export default function InstagramImportPage() {
         setStatus({
           type: "error",
           message: data.message || data.error || "İçerikler çekilemedi. Lütfen alternatif yöntemi kullanın.",
-          details: data.instructions,
+          details: data.instructions || data.details,
         })
       }
     } catch (error: any) {
@@ -116,7 +132,23 @@ export default function InstagramImportPage() {
         }),
       })
 
-      const data = await response.json()
+      // Response'u text olarak oku, sonra JSON'a çevir
+      const responseText = await response.text()
+      let data
+      
+      try {
+        data = JSON.parse(responseText)
+      } catch (parseError) {
+        // HTML veya başka bir format döndüyse
+        console.error('JSON parse error:', parseError, 'Response:', responseText.substring(0, 200))
+        setStatus({
+          type: "error",
+          message: "Sunucu hatası: Geçersiz yanıt formatı. Lütfen sunucu loglarını kontrol edin.",
+          details: responseText.substring(0, 500),
+        })
+        setIsImporting(false)
+        return
+      }
 
       if (response.ok && data.success) {
         setStatus({
