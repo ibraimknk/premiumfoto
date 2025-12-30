@@ -13,7 +13,9 @@
     "submit-sitemap": "tsx scripts/submit-sitemap.ts",
     "fix-instagram": "node scripts/fix-instagram-db-urls.js",
     "check-uploads": "node scripts/check-uploads-status.js",
-    "fix-uploads": "bash scripts/fix-all-uploads.sh"
+    "fix-uploads": "bash scripts/fix-all-uploads.sh",
+    "test-nginx": "bash scripts/test-nginx-uploads.sh",
+    "fix-nginx": "bash scripts/fix-nginx-uploads.sh"
   },
   "dependencies": {
     "next": "^14.2.0",
