@@ -22,7 +22,8 @@
     "fix-nginx-ownership": "bash scripts/fix-nginx-ownership.sh",
     "fix-nginx-path": "bash scripts/fix-nginx-path-permissions.sh",
     "test-nginx-debug": "bash scripts/test-nginx-debug.sh",
-    "fix-nginx-location": "bash scripts/fix-nginx-location.sh"
+    "fix-nginx-location": "bash scripts/fix-nginx-location.sh",
+    "install-instaloader": "bash scripts/install-instaloader.sh"
   },
   "dependencies": {
     "next": "^14.2.0",

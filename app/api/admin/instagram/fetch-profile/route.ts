@@ -63,40 +63,59 @@ export async function POST(request: Request) {
       // --dirname-pattern: İndirme klasörü
       const tempDir = join(uploadDir, `instagram-${instagramUsername}-temp`)
       
-      // Instaloader'ı bul (pipx, virtual env, sistem PATH)
-      const homeDir = process.env.HOME || '/home/ibrahim'
-      const instaloaderPaths = [
-        join(homeDir, '.local', 'bin', 'instaloader'), // pipx ile kurulduysa
-        join(homeDir, 'instagram-env', 'bin', 'instaloader'), // virtual env
-        'instaloader', // sistem PATH
-        '/usr/local/bin/instaloader',
-      ]
+           // Instaloader'ı bul (pipx, virtual env, sistem PATH)
+           const homeDir = process.env.HOME || '/home/ibrahim'
+           
+           // Önce which/command -v ile sistem PATH'te ara
+           let instaloaderCmd = 'instaloader'
+           try {
+             const { stdout } = await execAsync('which instaloader 2>/dev/null || command -v instaloader 2>/dev/null', { timeout: 2000 })
+             if (stdout.trim()) {
+               instaloaderCmd = stdout.trim()
+               console.log(`✅ Instaloader bulundu (PATH): ${instaloaderCmd}`)
+             }
+           } catch {
+             // PATH'te bulunamadı, alternatif yolları dene
+             const instaloaderPaths = [
+               join(homeDir, '.local', 'bin', 'instaloader'), // pipx ile kurulduysa
+               join(homeDir, 'instagram-env', 'bin', 'instaloader'), // virtual env
+               '/usr/local/bin/instaloader',
+               '/usr/bin/instaloader',
+             ]
+             
+             for (const path of instaloaderPaths) {
+               if (existsSync(path)) {
+                 instaloaderCmd = path
+                 console.log(`✅ Instaloader bulundu (dosya): ${instaloaderCmd}`)
+                 break
+               }
+             }
+           }
+           
+           // Eğer hala bulunamadıysa, PATH'e .local/bin ekleyerek dene
+           if (instaloaderCmd === 'instaloader') {
+             const localBinPath = join(homeDir, '.local', 'bin', 'instaloader')
+             if (existsSync(localBinPath)) {
+               instaloaderCmd = localBinPath
+               console.log(`✅ Instaloader bulundu (.local/bin): ${instaloaderCmd}`)
+             }
+           }
       
-      let instaloaderCmd = 'instaloader'
-      for (const path of instaloaderPaths) {
-        try {
-          // which veya command -v ile kontrol et
-          const { stdout } = await execAsync(`which ${path} 2>/dev/null || command -v ${path} 2>/dev/null || test -f ${path} && echo ${path}`, { timeout: 2000 })
-          if (stdout.trim()) {
-            instaloaderCmd = path
-            break
-          }
-        } catch {
-          // Dosya var mı kontrol et
-          if (existsSync(path)) {
-            instaloaderCmd = path
-            break
-          }
-          continue
-        }
-      }
-      
-      const command = `${instaloaderCmd} --no-videos --no-captions --no-metadata-json --no-profile-pic --dirname-pattern="${tempDir}" ${instagramUsername}`
-      
-      const { stdout, stderr } = await execAsync(command, {
-        cwd: process.cwd(),
-        timeout: 600000, // 10 dakika timeout (çok sayıda görsel için)
-      })
+           // PATH'e .local/bin ekle (eğer yoksa)
+           const env = {
+             ...process.env,
+             PATH: `${join(homeDir, '.local', 'bin')}:${process.env.PATH || ''}`,
+           }
+           
+           const command = `${instaloaderCmd} --no-videos --no-captions --no-metadata-json --no-profile-pic --dirname-pattern="${tempDir}" ${instagramUsername}`
+           
+           console.log(`📥 Instaloader komutu: ${command}`)
+           
+           const { stdout, stderr } = await execAsync(command, {
+             cwd: process.cwd(),
+             env: env,
+             timeout: 600000, // 10 dakika timeout (çok sayıda görsel için)
+           })
 
       console.log('Instaloader çıktısı:', stdout)
       if (stderr) {
