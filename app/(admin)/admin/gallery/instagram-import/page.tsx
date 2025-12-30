@@ -23,7 +23,7 @@ export default function InstagramImportPage() {
     if (!profileUrl.trim()) {
       setStatus({
         type: "error",
-        message: "Lütfen Instagram profil URL'sini girin",
+        message: "Lütfen Instagram kullanıcı adını veya profil URL'sini girin",
       })
       return
     }
@@ -32,29 +32,39 @@ export default function InstagramImportPage() {
     setStatus({ type: "idle" })
 
     try {
+      // Kullanıcı adını çıkar (URL'den veya direkt kullanıcı adı)
+      let username = profileUrl.trim()
+      if (username.includes('instagram.com/')) {
+        const match = username.match(/instagram\.com\/([^\/\?]+)/)
+        username = match ? match[1].replace(/\/$/, '') : username
+      }
+      username = username.replace(/^@/, '').replace(/\/$/, '')
+
+      // Sunucuda script çalıştırma isteği gönder
       const response = await fetch("/api/admin/instagram/fetch-profile", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          profileUrl,
+          profileUrl: `https://www.instagram.com/${username}/`,
+          username,
         }),
       })
 
       const data = await response.json()
 
-      if (response.ok) {
-        // Şimdilik manuel indirme talimatı göster
+      if (response.ok && data.success) {
         setStatus({
-          type: "error",
-          message: data.message || "Instagram'dan otomatik içerik çekmek için ek araçlar gerekir",
-          details: data.instructions,
+          type: "success",
+          message: data.message || `${data.imported || 0} içerik başarıyla indirildi ve galeriye eklendi`,
+          details: data,
         })
       } else {
         setStatus({
           type: "error",
-          message: data.error || "Profil bilgileri alınamadı",
+          message: data.message || data.error || "İçerikler çekilemedi. Lütfen alternatif yöntemi kullanın.",
+          details: data.instructions,
         })
       }
     } catch (error: any) {
@@ -144,25 +154,35 @@ export default function InstagramImportPage() {
           {/* Yöntem 1: Profil URL'si ile Otomatik Çekme */}
           <div className="space-y-4 p-4 bg-blue-50 rounded-md">
             <div>
-              <Label htmlFor="profileUrl">Instagram Profil URL&apos;si</Label>
+              <Label htmlFor="profileUrl">Instagram Profil URL&apos;si veya Kullanıcı Adı</Label>
               <Input
                 id="profileUrl"
                 value={profileUrl}
                 onChange={(e) => setProfileUrl(e.target.value)}
-                placeholder="https://www.instagram.com/dugunkaremcom/"
+                placeholder="dugunkaremcom veya https://www.instagram.com/dugunkaremcom/"
               />
               <p className="text-xs text-gray-500 mt-1">
-                Instagram profil URL&apos;sini girin (örn: https://www.instagram.com/dugunkaremcom/)
+                Instagram kullanıcı adını veya profil URL&apos;sini girin (örn: dugunkaremcom)
               </p>
             </div>
 
-            <Button
-              onClick={handleFetchProfile}
-              disabled={isFetching}
-              className="w-full"
-            >
-              {isFetching ? "Profil Bilgileri Alınıyor..." : "Profil İçeriklerini Çek"}
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                onClick={handleFetchProfile}
+                disabled={isFetching}
+                className="flex-1"
+              >
+                {isFetching ? "İçerikler Çekiliyor..." : "Tüm İçerikleri Otomatik Çek"}
+              </Button>
+            </div>
+            
+            <div className="p-3 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
+              <p className="font-semibold mb-1">⚠️ Önemli:</p>
+              <p>
+                Instagram&apos;dan otomatik içerik çekmek için sunucuda <code className="bg-yellow-100 px-1 rounded">puppeteer</code> paketi kurulu olmalıdır.
+                Alternatif olarak, Instagram içeriklerini manuel olarak indirip toplu yükleme özelliğini kullanabilirsiniz.
+              </p>
+            </div>
           </div>
 
           {/* Yöntem 2: URL Listesi ile Toplu İçe Aktarma */}
