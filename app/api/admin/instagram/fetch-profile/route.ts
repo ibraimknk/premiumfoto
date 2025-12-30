@@ -130,18 +130,53 @@ export async function POST(request: Request) {
            const command = `${instaloaderCmd} --no-videos --no-captions --no-metadata-json --no-profile-pic --dirname-pattern="${tempDir}" ${instagramUsername}`
            
            console.log(`📥 Instaloader komutu: ${command}`)
+           console.log(`📁 Temp dizini: ${tempDir}`)
+           console.log(`🔧 Environment PATH: ${env.PATH}`)
            
-           const { stdout, stderr } = await execAsync(command, {
-             cwd: process.cwd(),
-             env: env,
-             timeout: 600000, // 10 dakika timeout (çok sayıda görsel için)
-           })
-
-      console.log('Instaloader çıktısı:', stdout)
-      if (stderr) {
-        console.warn('Instaloader uyarıları:', stderr)
-        // 403 hatası olsa bile indirilen dosyalar varsa devam et
-      }
+           let stdout = ''
+           let stderr = ''
+           
+           try {
+             const result = await execAsync(command, {
+               cwd: process.cwd(),
+               env: env,
+               timeout: 600000, // 10 dakika timeout (çok sayıda görsel için)
+             })
+             stdout = result.stdout || ''
+             stderr = result.stderr || ''
+             
+             console.log('✅ Instaloader çıktısı:', stdout)
+             if (stderr) {
+               console.warn('⚠️ Instaloader uyarıları:', stderr)
+               // 403 hatası olsa bile indirilen dosyalar varsa devam et
+             }
+           } catch (execError: any) {
+             console.error('❌ Instaloader çalıştırma hatası:', execError)
+             console.error('   Hata kodu:', execError.code)
+             console.error('   Hata mesajı:', execError.message)
+             console.error('   stdout:', execError.stdout || '')
+             console.error('   stderr:', execError.stderr || '')
+             
+             // Hata olsa bile tempDir var mı kontrol et (bazı dosyalar indirilmiş olabilir)
+             if (!existsSync(tempDir)) {
+               return NextResponse.json({
+                 success: false,
+                 message: `Instaloader çalıştırılamadı: ${execError.message || execError.code || 'Bilinmeyen hata'}`,
+                 error: execError.message || String(execError),
+                 code: execError.code,
+                 instructions: [
+                   "1. Instaloader'ın çalıştığını kontrol edin: instaloader --version",
+                   "2. Python bağımlılıklarını kontrol edin: pip3 list | grep instaloader",
+                   "3. Manuel test: instaloader --no-videos USERNAME",
+                   "4. Alternatif: Instagram içeriklerini manuel olarak indirip toplu yükleme özelliğini kullanın"
+                 ]
+               }, { status: 500 })
+             }
+             
+             // TempDir varsa devam et (bazı dosyalar indirilmiş olabilir)
+             console.warn('⚠️ Instaloader hatası ama tempDir mevcut, devam ediliyor...')
+             stderr = execError.stderr || execError.message || ''
+           }
 
       // İndirilen dosyaları bul ve veritabanına ekle
       // 403 hatası olsa bile indirilen dosyalar varsa işle
