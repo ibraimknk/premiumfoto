@@ -20,7 +20,9 @@
     "fix-nginx-permissions": "bash scripts/fix-nginx-permissions.sh",
     "fix-nginx-config": "bash scripts/fix-nginx-config-clean.sh",
     "fix-nginx-ownership": "bash scripts/fix-nginx-ownership.sh",
-    "fix-nginx-path": "bash scripts/fix-nginx-path-permissions.sh"
+    "fix-nginx-path": "bash scripts/fix-nginx-path-permissions.sh",
+    "test-nginx-debug": "bash scripts/test-nginx-debug.sh",
+    "fix-nginx-location": "bash scripts/fix-nginx-location.sh"
   },
   "dependencies": {
     "next": "^14.2.0",

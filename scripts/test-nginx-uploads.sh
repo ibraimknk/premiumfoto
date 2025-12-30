@@ -45,10 +45,11 @@ echo ""
 sudo cat /etc/nginx/sites-available/foto-ugur | grep -A 5 "location /uploads"
 echo ""
 
-# Localhost üzerinden test
+# Localhost üzerinden test (Host header ile)
 echo "🌐 Localhost üzerinden test:"
 echo "   Test URL: http://localhost$FILE_PATH"
-HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost$FILE_PATH")
+echo "   Host header ile test:"
+HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -H "Host: fotougur.com.tr" "http://localhost$FILE_PATH")
 echo "   HTTP Status: $HTTP_CODE"
 
 # Nginx error log kontrolü
