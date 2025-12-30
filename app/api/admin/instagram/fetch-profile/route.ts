@@ -157,8 +157,29 @@ export async function POST(request: Request) {
              console.error('   stdout:', execError.stdout || '')
              console.error('   stderr:', execError.stderr || '')
              
+             // Instagram rate limiting kontrolü
+             const isRateLimit = execError.stderr?.includes('401 Unauthorized') || 
+                                execError.stderr?.includes('Please wait a few minutes') ||
+                                execError.stderr?.includes('rate limit')
+             
              // Hata olsa bile tempDir var mı kontrol et (bazı dosyalar indirilmiş olabilir)
              if (!existsSync(tempDir)) {
+               if (isRateLimit) {
+                 return NextResponse.json({
+                   success: false,
+                   message: "Instagram rate limiting: Lütfen birkaç dakika bekleyip tekrar deneyin.",
+                   error: "Instagram API rate limit - 401 Unauthorized",
+                   code: execError.code,
+                   instructions: [
+                     "1. Instagram rate limiting aktif - birkaç dakika bekleyin",
+                     "2. Daha sonra tekrar deneyin",
+                     "3. Alternatif: Instagram içeriklerini manuel olarak indirip toplu yükleme özelliğini kullanın",
+                     "4. VEYA: Instaloader'ı login ile kullanın (daha fazla istek hakkı için)"
+                   ],
+                   retryAfter: "5-10 dakika"
+                 }, { status: 429 })
+               }
+               
                return NextResponse.json({
                  success: false,
                  message: `Instaloader çalıştırılamadı: ${execError.message || execError.code || 'Bilinmeyen hata'}`,
@@ -174,7 +195,11 @@ export async function POST(request: Request) {
              }
              
              // TempDir varsa devam et (bazı dosyalar indirilmiş olabilir)
-             console.warn('⚠️ Instaloader hatası ama tempDir mevcut, devam ediliyor...')
+             if (isRateLimit) {
+               console.warn('⚠️ Instagram rate limiting ama tempDir mevcut, mevcut dosyalar işleniyor...')
+             } else {
+               console.warn('⚠️ Instaloader hatası ama tempDir mevcut, devam ediliyor...')
+             }
              stderr = execError.stderr || execError.message || ''
            }
 
