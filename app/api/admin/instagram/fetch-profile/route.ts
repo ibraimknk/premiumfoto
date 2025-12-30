@@ -62,7 +62,26 @@ export async function POST(request: Request) {
       // --no-profile-pic: Profil fotoğrafını indirme
       // --dirname-pattern: İndirme klasörü
       const tempDir = join(uploadDir, `instagram-${instagramUsername}-temp`)
-      const command = `instaloader --no-videos --no-captions --no-metadata-json --no-profile-pic --dirname-pattern="${tempDir}" ${instagramUsername}`
+      
+      // Instaloader'ı bul (önce ~/.local/bin, sonra sistem PATH)
+      const instaloaderPaths = [
+        join(process.env.HOME || '/home/ibrahim', '.local', 'bin', 'instaloader'),
+        'instaloader',
+        '/usr/local/bin/instaloader',
+      ]
+      
+      let instaloaderCmd = 'instaloader'
+      for (const path of instaloaderPaths) {
+        try {
+          await execAsync(`which ${path} || command -v ${path}`, { timeout: 1000 })
+          instaloaderCmd = path
+          break
+        } catch {
+          continue
+        }
+      }
+      
+      const command = `${instaloaderCmd} --no-videos --no-captions --no-metadata-json --no-profile-pic --dirname-pattern="${tempDir}" ${instagramUsername}`
       
       const { stdout, stderr } = await execAsync(command, {
         cwd: process.cwd(),
