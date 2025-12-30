@@ -63,20 +63,30 @@ export async function POST(request: Request) {
       // --dirname-pattern: İndirme klasörü
       const tempDir = join(uploadDir, `instagram-${instagramUsername}-temp`)
       
-      // Instaloader'ı bul (önce ~/.local/bin, sonra sistem PATH)
+      // Instaloader'ı bul (pipx, virtual env, sistem PATH)
+      const homeDir = process.env.HOME || '/home/ibrahim'
       const instaloaderPaths = [
-        join(process.env.HOME || '/home/ibrahim', '.local', 'bin', 'instaloader'),
-        'instaloader',
+        join(homeDir, '.local', 'bin', 'instaloader'), // pipx ile kurulduysa
+        join(homeDir, 'instagram-env', 'bin', 'instaloader'), // virtual env
+        'instaloader', // sistem PATH
         '/usr/local/bin/instaloader',
       ]
       
       let instaloaderCmd = 'instaloader'
       for (const path of instaloaderPaths) {
         try {
-          await execAsync(`which ${path} || command -v ${path}`, { timeout: 1000 })
-          instaloaderCmd = path
-          break
+          // which veya command -v ile kontrol et
+          const { stdout } = await execAsync(`which ${path} 2>/dev/null || command -v ${path} 2>/dev/null || test -f ${path} && echo ${path}`, { timeout: 2000 })
+          if (stdout.trim()) {
+            instaloaderCmd = path
+            break
+          }
         } catch {
+          // Dosya var mı kontrol et
+          if (existsSync(path)) {
+            instaloaderCmd = path
+            break
+          }
           continue
         }
       }
