@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { generateBlogPost } from "@/lib/gemini"
+import { ensureBlogImage } from "@/lib/blog-image-helper"
 
 export const dynamic = 'force-dynamic'
 
@@ -45,6 +46,9 @@ export async function POST(request: Request) {
           counter++
         }
 
+        // Görsel kontrolü - yoksa varsayılan görseli ekle
+        const coverImage = ensureBlogImage(blogData.coverImage)
+        
         // Blog yazısını veritabanına kaydet (otomatik yayınla)
         const post = await prisma.blogPost.create({
           data: {
@@ -56,8 +60,8 @@ export async function POST(request: Request) {
             seoTitle: blogData.seoTitle,
             seoDescription: blogData.seoDescription,
             seoKeywords: blogData.seoKeywords,
-            coverImage: blogData.coverImage || null,
-            ogImage: blogData.coverImage || null,
+            coverImage: coverImage,
+            ogImage: coverImage,
             isPublished: true, // Otomatik olarak yayınla
             publishedAt: new Date(), // Yayın tarihi şimdi
           },

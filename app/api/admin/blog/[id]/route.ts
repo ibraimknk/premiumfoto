@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { ensureBlogImage } from "@/lib/blog-image-helper"
 
 // Bu route dinamik olmalı çünkü authentication için headers kullanıyor
 export const dynamic = 'force-dynamic'
@@ -31,6 +32,9 @@ export async function PUT(
       publishedAt,
     } = body
 
+    // Görsel kontrolü - yoksa varsayılan görseli ekle
+    const finalCoverImage = ensureBlogImage(coverImage)
+    
     const post = await prisma.blogPost.update({
       where: { id: params.id },
       data: {
@@ -39,7 +43,8 @@ export async function PUT(
         excerpt,
         content,
         category,
-        coverImage,
+        coverImage: finalCoverImage,
+        ogImage: finalCoverImage,
         seoTitle,
         seoDescription,
         seoKeywords,
