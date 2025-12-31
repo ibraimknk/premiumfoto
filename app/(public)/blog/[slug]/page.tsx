@@ -8,6 +8,7 @@ import { generatePageMetadata, generateArticleSchema } from "@/lib/seo"
 import Container from "@/components/layout/Container"
 import { AnimatedSection } from "@/components/features/AnimatedSection"
 import { shouldUnoptimizeImage } from "@/lib/image-utils"
+import { getBlogImage } from "@/lib/blog-image-helper"
 
 export async function generateStaticParams() {
   const posts = await prisma.blogPost.findMany({
@@ -37,7 +38,7 @@ export async function generateMetadata({
     post.seoTitle || post.title,
     post.seoDescription || post.excerpt || undefined,
     post.seoKeywords || undefined,
-    post.ogImage || post.coverImage || undefined
+    getBlogImage(post.ogImage || post.coverImage)
   )
 }
 
@@ -102,17 +103,15 @@ export default async function BlogPostPage({
           <Container size="md">
             <AnimatedSection>
               {/* Cover Image */}
-              {post.coverImage && (
-                <div className="relative h-96 w-full mb-8 rounded-2xl overflow-hidden">
-                  <Image
-                    src={post.coverImage}
-                    alt={`${post.title} - Foto Uğur blog yazısı`}
-                    fill
-                    className="object-cover"
-                    unoptimized={shouldUnoptimizeImage(post.coverImage)}
-                  />
-                </div>
-              )}
+              <div className="relative h-96 w-full mb-8 rounded-2xl overflow-hidden">
+                <Image
+                  src={getBlogImage(post.coverImage)}
+                  alt={`${post.title} - Foto Uğur blog yazısı`}
+                  fill
+                  className="object-cover"
+                  unoptimized={shouldUnoptimizeImage(getBlogImage(post.coverImage))}
+                />
+              </div>
 
               {/* Content */}
               {post.content && (
@@ -133,17 +132,15 @@ export default async function BlogPostPage({
                         href={`/blog/${relatedPost.slug}`}
                         className="group"
                       >
-                        {relatedPost.coverImage && (
-                          <div className="relative h-32 w-full mb-3 rounded-lg overflow-hidden">
-                            <Image
-                              src={relatedPost.coverImage}
-                              alt={`${relatedPost.title} - Foto Uğur blog yazısı`}
-                              fill
-                              className="object-cover group-hover:scale-110 transition-transform"
-                              unoptimized={shouldUnoptimizeImage(relatedPost.coverImage)}
-                            />
-                          </div>
-                        )}
+                        <div className="relative h-32 w-full mb-3 rounded-lg overflow-hidden">
+                          <Image
+                            src={getBlogImage(relatedPost.coverImage)}
+                            alt={`${relatedPost.title} - Foto Uğur blog yazısı`}
+                            fill
+                            className="object-cover group-hover:scale-110 transition-transform"
+                            unoptimized={shouldUnoptimizeImage(getBlogImage(relatedPost.coverImage))}
+                          />
+                        </div>
                         <h3 className="font-semibold group-hover:text-amber-600 transition-colors">
                           {relatedPost.title}
                         </h3>

@@ -7,6 +7,7 @@ import { generatePageMetadata } from "@/lib/seo"
 import Container from "@/components/layout/Container"
 import { AnimatedSection } from "@/components/features/AnimatedSection"
 import { shouldUnoptimizeImage } from "@/lib/image-utils"
+import { getBlogImage } from "@/lib/blog-image-helper"
 
 // Force dynamic rendering to always fetch fresh data
 export const dynamic = 'force-dynamic'
@@ -55,17 +56,15 @@ export default async function BlogPage() {
             {posts.map((post, index) => (
               <AnimatedSection key={post.id} delay={index * 0.1}>
                 <Card className="h-full hover:shadow-lg transition-shadow rounded-3xl border border-neutral-200 bg-white shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
-              {post.coverImage && (
-                <div className="relative h-48 w-full overflow-hidden rounded-t-lg">
-                  <Image
-                    src={post.coverImage}
-                    alt={`${post.title} - Foto Uğur blog yazısı`}
-                    fill
-                    className="object-cover"
-                    unoptimized={shouldUnoptimizeImage(post.coverImage)}
-                  />
-                </div>
-              )}
+              <div className="relative h-48 w-full overflow-hidden rounded-t-lg">
+                <Image
+                  src={getBlogImage(post.coverImage)}
+                  alt={`${post.title} - Foto Uğur blog yazısı`}
+                  fill
+                  className="object-cover"
+                  unoptimized={shouldUnoptimizeImage(getBlogImage(post.coverImage))}
+                />
+              </div>
               <CardHeader>
                 {post.category && (
                   <span className="text-xs font-semibold text-primary mb-2">
