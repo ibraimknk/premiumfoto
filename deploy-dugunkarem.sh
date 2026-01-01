@@ -295,20 +295,37 @@ mkdir -p "$WORK_DIR/public/uploads"
 chmod 755 "$WORK_DIR/public/uploads"
 
 # PM2 ile uygulamayı başlatma/durdurma
-cd "$APP_DIR"
+if [ "$SKIP_BUILD" = true ]; then
+    echo -e "${RED}❌ Build yapılmadı, PM2 başlatılamıyor!${NC}"
+    echo -e "${YELLOW}💡 Lütfen repository'yi kontrol edin ve package.json dosyasının olduğundan emin olun.${NC}"
+    exit 1
+fi
+
+cd "$WORK_DIR"
+
+# serve komutunun kurulu olduğundan emin ol
+if ! command -v serve &> /dev/null; then
+    echo -e "${YELLOW}📦 serve paketi kuruluyor...${NC}"
+    sudo npm install -g serve
+fi
+
 if pm2 list | grep -q "${PM2_APP_NAME}"; then
-    echo -e "${YELLOW}🔄 PM2 uygulaması yeniden başlatılıyor...${NC}"
-    pm2 restart "${PM2_APP_NAME}" --update-env
-else
-    echo -e "${YELLOW}🚀 PM2 uygulaması başlatılıyor...${NC}"
-    # PM2 ecosystem dosyası oluştur (PORT environment variable ile)
-    cat > "$APP_DIR/ecosystem.config.js" << PM2EOF
+    echo -e "${YELLOW}🔄 PM2 uygulaması durduruluyor...${NC}"
+    pm2 delete "${PM2_APP_NAME}" || true
+fi
+
+echo -e "${YELLOW}🚀 PM2 uygulaması başlatılıyor...${NC}"
+
+# PM2 ecosystem dosyası oluştur (CRA için serve kullan)
+if [ -d "build" ]; then
+    # CRA projesi - serve kullan
+    cat > "$WORK_DIR/ecosystem.config.js" << PM2EOF
 module.exports = {
   apps: [{
     name: '${PM2_APP_NAME}',
-    script: 'npm',
-    args: 'start',
-    cwd: '${APP_DIR}',
+    script: 'serve',
+    args: '-s build -l ${APP_PORT}',
+    cwd: '${WORK_DIR}',
     env: {
       NODE_ENV: 'production',
       PORT: ${APP_PORT},
@@ -326,9 +343,37 @@ module.exports = {
   }]
 }
 PM2EOF
-    pm2 start "$APP_DIR/ecosystem.config.js"
-    pm2 save
+    pm2 start "$WORK_DIR/ecosystem.config.js"
+else
+    # Next.js projesi - npm start
+    cat > "$WORK_DIR/ecosystem.config.js" << PM2EOF
+module.exports = {
+  apps: [{
+    name: '${PM2_APP_NAME}',
+    script: 'npm',
+    args: 'start',
+    cwd: '${WORK_DIR}',
+    env: {
+      NODE_ENV: 'production',
+      PORT: ${APP_PORT},
+      PATH: process.env.PATH
+    },
+    error_file: '$HOME/.pm2/logs/${PM2_APP_NAME}-error.log',
+    out_file: '$HOME/.pm2/logs/${PM2_APP_NAME}-out.log',
+    log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
+    merge_logs: true,
+    autorestart: true,
+    watch: false,
+    max_memory_restart: '1G',
+    instances: 1,
+    exec_mode: 'fork'
+  }]
+}
+PM2EOF
+    pm2 start "$WORK_DIR/ecosystem.config.js"
 fi
+
+pm2 save
 
 # PM2 durum kontrolü
 echo -e "${YELLOW}📊 PM2 durumu kontrol ediliyor...${NC}"
