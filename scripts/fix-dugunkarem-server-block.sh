@@ -1,0 +1,87 @@
+#!/bin/bash
+
+# foto-ugur config'indeki ilk server block'tan dugunkarem.com'u kaldır
+
+set -e
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+FOTO_UGUR_CONFIG="/etc/nginx/sites-available/foto-ugur"
+
+echo -e "${YELLOW}🔧 foto-ugur config'indeki ilk server block'tan dugunkarem.com kaldırılıyor...${NC}"
+
+# Config yedekle
+sudo cp "$FOTO_UGUR_CONFIG" "${FOTO_UGUR_CONFIG}.backup.$(date +%Y%m%d_%H%M%S)"
+
+# İlk server block'tan dugunkarem.com ve dugunkarem.com.tr'yi kaldır
+echo -e "${YELLOW}📝 İlk server block düzeltiliyor...${NC}"
+
+sudo python3 << 'PYEOF'
+import re
+
+config_file = "/etc/nginx/sites-available/foto-ugur"
+
+with open(config_file, 'r') as f:
+    content = f.read()
+
+# İlk server block'u bul (fotougur.com.tr içeren, 443 portu olan)
+# Bu block'tan dugunkarem.com ve dugunkarem.com.tr'yi kaldır
+pattern = r'(server\s*\{[^}]*server_name\s+)([^;]+)(;[^}]*listen\s+443[^}]*ssl_certificate[^}]*fotougur\.com\.tr[^}]*\})'
+
+def remove_dugunkarem(match):
+    server_start = match.group(1)
+    server_names = match.group(2)
+    server_end = match.group(3)
+    
+    # dugunkarem domain'lerini kaldır
+    server_names = re.sub(r'\s*dugunkarem\.com\.tr\s*', ' ', server_names)
+    server_names = re.sub(r'\s*dugunkarem\.com\s*', ' ', server_names)
+    server_names = re.sub(r'\s+', ' ', server_names).strip()
+    
+    return server_start + server_names + server_end
+
+content = re.sub(pattern, remove_dugunkarem, content, flags=re.DOTALL, count=1)
+
+# 80 portu için server block'tan da kaldır
+pattern = r'(server\s*\{[^}]*listen\s+80[^}]*server_name\s+)([^;]+)(;[^}]*fotougur[^}]*\})'
+
+def remove_dugunkarem_80(match):
+    server_start = match.group(1)
+    server_names = match.group(2)
+    server_end = match.group(3)
+    
+    # dugunkarem domain'lerini kaldır
+    server_names = re.sub(r'\s*dugunkarem\.com\.tr\s*', ' ', server_names)
+    server_names = re.sub(r'\s*dugunkarem\.com\s*', ' ', server_names)
+    server_names = re.sub(r'\s+', ' ', server_names).strip()
+    
+    return server_start + server_names + server_end
+
+content = re.sub(pattern, remove_dugunkarem_80, content, flags=re.DOTALL, count=1)
+
+with open(config_file, 'w') as f:
+    f.write(content)
+
+print("✅ dugunkarem.com ilk server block'tan kaldırıldı")
+PYEOF
+
+# Nginx test
+echo -e "${YELLOW}🔄 Nginx test ediliyor...${NC}"
+if sudo nginx -t; then
+    echo -e "${GREEN}✅ Nginx config OK${NC}"
+    sudo systemctl reload nginx
+    echo -e "${GREEN}✅ Nginx reload edildi${NC}"
+else
+    echo -e "${RED}❌ Nginx config hatası!${NC}"
+    exit 1
+fi
+
+echo ""
+echo -e "${GREEN}✅ dugunkarem.com artık sadece kendi server block'unu kullanacak!${NC}"
+echo -e "${YELLOW}📋 Test:${NC}"
+echo "   curl -I https://dugunkarem.com"
+echo "   curl -I https://dugunkarem.com.tr"
+
