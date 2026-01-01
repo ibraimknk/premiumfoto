@@ -17,8 +17,22 @@ echo -e "${YELLOW}🔧 dugunkarem.com için fotougur.com.tr sertifikası kullan�
 
 # Sertifika dosyalarını kontrol et
 if [ ! -f "$FOTOUGUR_CERT" ] || [ ! -f "$FOTOUGUR_KEY" ]; then
-    echo -e "${RED}❌ fotougur.com.tr sertifikası bulunamadı!${NC}"
-    exit 1
+    echo -e "${YELLOW}⚠️  fotougur.com.tr sertifikası bulunamadı, aranıyor...${NC}"
+    
+    # Sertifika dosyalarını ara
+    FOTOUGUR_CERT_FOUND=$(sudo find /etc/letsencrypt -name "*fotougur*" -name "fullchain.pem" 2>/dev/null | head -1)
+    FOTOUGUR_KEY_FOUND=$(sudo find /etc/letsencrypt -name "*fotougur*" -name "privkey.pem" 2>/dev/null | head -1)
+    
+    if [ -n "$FOTOUGUR_CERT_FOUND" ] && [ -n "$FOTOUGUR_KEY_FOUND" ]; then
+        FOTOUGUR_CERT="$FOTOUGUR_CERT_FOUND"
+        FOTOUGUR_KEY="$FOTOUGUR_KEY_FOUND"
+        echo -e "${GREEN}✅ Sertifika bulundu: $FOTOUGUR_CERT${NC}"
+    else
+        echo -e "${RED}❌ fotougur.com.tr sertifikası bulunamadı!${NC}"
+        echo -e "${YELLOW}💡 Mevcut sertifikalar:${NC}"
+        sudo certbot certificates 2>/dev/null | grep -E "Certificate Name|Domains" | head -10
+        exit 1
+    fi
 fi
 
 echo -e "${GREEN}✅ fotougur.com.tr sertifikası bulundu${NC}"
