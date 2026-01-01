@@ -116,6 +116,20 @@ echo -e "${YELLOW}🏗️  Production build oluşturuluyor...${NC}"
 if [ -d "$APP_DIR/.next" ]; then
     rm -rf "$APP_DIR/.next"
 fi
+
+# package.json'da start script'i kontrol et ve güncelle
+if [ -f "$APP_DIR/package.json" ]; then
+    # PORT'u package.json'da güncelle (eğer start script'i varsa)
+    if grep -q '"start"' "$APP_DIR/package.json"; then
+        # start script'inde port varsa güncelle, yoksa ekle
+        if grep -q '"start".*"-p"' "$APP_DIR/package.json"; then
+            sed -i "s|\"start\".*\"-p\"[^,]*|\"start\": \"next start -p ${APP_PORT}\"|g" "$APP_DIR/package.json"
+        else
+            sed -i "s|\"start\":[^,]*|\"start\": \"next start -p ${APP_PORT}\"|g" "$APP_DIR/package.json"
+        fi
+    fi
+fi
+
 npm run build
 
 # Uploads dizini oluşturma
@@ -130,7 +144,32 @@ if pm2 list | grep -q "${PM2_APP_NAME}"; then
     pm2 restart "${PM2_APP_NAME}" --update-env
 else
     echo -e "${YELLOW}🚀 PM2 uygulaması başlatılıyor...${NC}"
-    pm2 start npm --name "${PM2_APP_NAME}" -- start
+    # PM2 ecosystem dosyası oluştur (PORT environment variable ile)
+    cat > "$APP_DIR/ecosystem.config.js" << PM2EOF
+module.exports = {
+  apps: [{
+    name: '${PM2_APP_NAME}',
+    script: 'npm',
+    args: 'start',
+    cwd: '${APP_DIR}',
+    env: {
+      NODE_ENV: 'production',
+      PORT: ${APP_PORT},
+      PATH: process.env.PATH
+    },
+    error_file: '$HOME/.pm2/logs/${PM2_APP_NAME}-error.log',
+    out_file: '$HOME/.pm2/logs/${PM2_APP_NAME}-out.log',
+    log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
+    merge_logs: true,
+    autorestart: true,
+    watch: false,
+    max_memory_restart: '1G',
+    instances: 1,
+    exec_mode: 'fork'
+  }]
+}
+PM2EOF
+    pm2 start "$APP_DIR/ecosystem.config.js"
     pm2 save
 fi
 
