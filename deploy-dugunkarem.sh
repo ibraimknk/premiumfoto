@@ -203,26 +203,32 @@ fi
 echo -e "${YELLOW}🔍 Proje yapısı kontrol ediliyor...${NC}"
 cd "$APP_DIR"
 
-# Dizin içeriğini listele
-echo -e "${YELLOW}📁 Dizin içeriği:${NC}"
-ls -la
+# package.json kontrolü (root veya frontend dizininde)
+PACKAGE_JSON_PATH=""
+WORK_DIR="$APP_DIR"
 
-# package.json kontrolü
-if [ ! -f "package.json" ]; then
+if [ -f "package.json" ]; then
+    PACKAGE_JSON_PATH="package.json"
+    WORK_DIR="$APP_DIR"
+    echo -e "${GREEN}✅ package.json root dizininde bulundu${NC}"
+elif [ -f "frontend/package.json" ]; then
+    PACKAGE_JSON_PATH="frontend/package.json"
+    WORK_DIR="$APP_DIR/frontend"
+    echo -e "${GREEN}✅ package.json frontend dizininde bulundu${NC}"
+    cd "$WORK_DIR"
+else
     echo -e "${RED}❌ package.json bulunamadı!${NC}"
-    echo -e "${YELLOW}💡 Repository boş olabilir veya farklı bir yapıda olabilir.${NC}"
-    echo -e "${YELLOW}📋 Repository içeriği:${NC}"
+    echo -e "${YELLOW}💡 Repository içeriği:${NC}"
     ls -la
     echo ""
     echo -e "${YELLOW}⚠️ package.json bulunamadı, npm kurulumu atlanıyor...${NC}"
     SKIP_NPM=true
-else
-    SKIP_NPM=false
 fi
 
 # Bağımlılıkların kurulumu
 if [ "$SKIP_NPM" = false ]; then
     echo -e "${YELLOW}📦 NPM paketleri kuruluyor...${NC}"
+    cd "$WORK_DIR"
     
     # package-lock.json varsa npm ci, yoksa npm install
     if [ -f "package-lock.json" ]; then
@@ -269,8 +275,8 @@ npm run build
 
 # Uploads dizini oluşturma
 echo -e "${YELLOW}📁 Uploads dizini oluşturuluyor...${NC}"
-mkdir -p "$APP_DIR/public/uploads"
-chmod 755 "$APP_DIR/public/uploads"
+mkdir -p "$WORK_DIR/public/uploads"
+chmod 755 "$WORK_DIR/public/uploads"
 
 # PM2 ile uygulamayı başlatma/durdurma
 cd "$APP_DIR"
