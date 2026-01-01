@@ -26,7 +26,8 @@
     "install-instaloader": "bash scripts/install-instaloader.sh",
     "fix-pm2-env": "bash scripts/fix-pm2-env.sh",
     "fix-blog-images": "node scripts/fix-blog-images.js",
-    "fix-git-conflict": "bash scripts/fix-git-conflict.sh"
+    "fix-git-conflict": "bash scripts/fix-git-conflict.sh",
+    "fix-dugunkarem-nginx": "bash scripts/fix-dugunkarem-nginx.sh"
   },
   "dependencies": {
     "next": "^14.2.0",
