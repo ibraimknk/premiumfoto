@@ -90,49 +90,73 @@ else
     if [ "$CLONE_SUCCESS" = false ]; then
         echo -e "${YELLOW}🌐 HTTPS ile clone deneniyor (public repo, non-interactive)...${NC}"
         # GIT_TERMINAL_PROMPT=0 ile interaktif prompt'u devre dışı bırak
-        if GIT_TERMINAL_PROMPT=0 git clone "$GIT_REPO" "$APP_DIR" 2>/dev/null; then
+        CLONE_OUTPUT=$(GIT_TERMINAL_PROMPT=0 git clone "$GIT_REPO" "$APP_DIR" 2>&1)
+        CLONE_EXIT_CODE=$?
+        
+        if [ $CLONE_EXIT_CODE -eq 0 ]; then
             echo -e "${GREEN}✅ HTTPS ile klonlandı${NC}"
             CLONE_SUCCESS=true
         else
-            # Alternatif: Direkt public URL ile dene
-            echo -e "${YELLOW}🔄 Alternatif yöntem deneniyor...${NC}"
-            if GIT_TERMINAL_PROMPT=0 GIT_ASKPASS=echo git clone "$GIT_REPO" "$APP_DIR" 2>/dev/null; then
+            echo -e "${YELLOW}⚠️ İlk deneme başarısız, hata:${NC}"
+            echo "$CLONE_OUTPUT" | head -3
+            echo ""
+            
+            # Alternatif: Direkt public URL ile dene (verbose)
+            echo -e "${YELLOW}🔄 Alternatif yöntem deneniyor (verbose)...${NC}"
+            CLONE_OUTPUT2=$(GIT_TERMINAL_PROMPT=0 GIT_ASKPASS=echo git -c credential.helper= clone "$GIT_REPO" "$APP_DIR" 2>&1)
+            CLONE_EXIT_CODE2=$?
+            
+            if [ $CLONE_EXIT_CODE2 -eq 0 ]; then
                 echo -e "${GREEN}✅ HTTPS ile klonlandı (alternatif yöntem)${NC}"
                 CLONE_SUCCESS=true
+            else
+                echo -e "${YELLOW}⚠️ Alternatif yöntem de başarısız, hata:${NC}"
+                echo "$CLONE_OUTPUT2" | head -5
             fi
         fi
     fi
     
-    # 3. Başarısız olursa kullanıcıya talimat ver
+    # 3. Başarısız olursa manuel clone öner
     if [ "$CLONE_SUCCESS" = false ]; then
         echo -e "${RED}❌ Git clone başarısız!${NC}"
         echo ""
-        echo -e "${YELLOW}💡 Çözüm seçenekleri:${NC}"
+        echo -e "${YELLOW}💡 Manuel clone yapılıyor...${NC}"
         echo ""
-        echo -e "${YELLOW}1️⃣ SSH Key ile (Önerilen):${NC}"
-        echo "   # SSH key oluştur:"
-        echo "   ssh-keygen -t ed25519 -C \"your_email@example.com\""
-        echo "   # Public key'i göster:"
-        echo "   cat ~/.ssh/id_ed25519.pub"
-        echo "   # GitHub → Settings → SSH and GPG keys → New SSH key"
-        echo "   # Sonra tekrar çalıştır:"
-        echo "   bash deploy-dugunkarem.sh"
-        echo ""
-        echo -e "${YELLOW}2️⃣ Personal Access Token ile:${NC}"
-        echo "   # GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)"
-        echo "   # 'repo' yetkisi ile token oluştur"
-        echo "   # Sonra manuel clone:"
-        echo "   cd /home/ibrahim"
-        echo "   git clone https://YOUR_TOKEN@github.com/ibraimknk/dugunkarem.git dugunkarem"
-        echo "   # Sonra deploy script'ini tekrar çalıştır:"
-        echo "   cd ~/premiumfoto && bash deploy-dugunkarem.sh"
-        echo ""
-        echo -e "${YELLOW}3️⃣ Manuel clone (zaten yapıldıysa):${NC}"
-        echo "   # Eğer projeyi zaten manuel klonladıysanız, script'i tekrar çalıştırın:"
-        echo "   cd ~/premiumfoto && bash deploy-dugunkarem.sh"
-        echo ""
-        echo -e "${YELLOW}⚠️ Repository private ise SSH key veya Personal Access Token gerekli!${NC}"
-        exit 1
+        
+        # Manuel clone dene (kullanıcı etkileşimi olmadan)
+        echo -e "${YELLOW}📥 Manuel clone deneniyor...${NC}"
+        cd /home/ibrahim
+        
+        # Önce mevcut dizini sil (eğer varsa)
+        if [ -d "$APP_DIR" ]; then
+            echo -e "${YELLOW}🗑️  Mevcut dizin temizleniyor...${NC}"
+            rm -rf "$APP_DIR"
+        fi
+        
+        # Clone dene (hata mesajlarını göster)
+        if git clone "$GIT_REPO" "$APP_DIR"; then
+            echo -e "${GREEN}✅ Manuel clone başarılı!${NC}"
+            CLONE_SUCCESS=true
+            cd "$APP_DIR"
+        else
+            echo -e "${RED}❌ Manuel clone da başarısız!${NC}"
+            echo ""
+            echo -e "${YELLOW}💡 Çözüm seçenekleri:${NC}"
+            echo ""
+            echo -e "${YELLOW}1️⃣ Repository'nin public olduğundan emin olun:${NC}"
+            echo "   GitHub → Repository Settings → Danger Zone → Change visibility → Make public"
+            echo ""
+            echo -e "${YELLOW}2️⃣ SSH Key ile:${NC}"
+            echo "   ssh-keygen -t ed25519 -C \"your_email@example.com\""
+            echo "   cat ~/.ssh/id_ed25519.pub"
+            echo "   # GitHub → Settings → SSH and GPG keys → New SSH key"
+            echo ""
+            echo -e "${YELLOW}3️⃣ Personal Access Token ile:${NC}"
+            echo "   cd /home/ibrahim"
+            echo "   git clone https://YOUR_TOKEN@github.com/ibraimknk/dugunkarem.git dugunkarem"
+            echo ""
+            exit 1
+        fi
     fi
     
     cd "$APP_DIR"
