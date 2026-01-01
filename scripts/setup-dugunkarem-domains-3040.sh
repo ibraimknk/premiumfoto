@@ -50,11 +50,11 @@ fi
 echo ""
 echo "🔒 SSL sertifikası kuruluyor..."
 
-# Certbot ile SSL kur (her iki domain için)
-sudo certbot --nginx -d dugunkarem.com -d www.dugunkarem.com -d dugunkarem.com.tr -d www.dugunkarem.com.tr --non-interactive --agree-tos --email ibrahim@example.com 2>&1 || {
+# Certbot ile SSL kur (sadece ana domain'ler için, www yok)
+sudo certbot --nginx -d dugunkarem.com -d dugunkarem.com.tr --non-interactive --agree-tos --email ibrahim@example.com 2>&1 || {
     echo "⚠️ Certbot başarısız, manuel kurulum gerekebilir"
     echo "💡 Manuel kurulum:"
-    echo "   sudo certbot --nginx -d dugunkarem.com -d www.dugunkarem.com -d dugunkarem.com.tr -d www.dugunkarem.com.tr"
+    echo "   sudo certbot --nginx -d dugunkarem.com -d dugunkarem.com.tr"
 }
 
 # Nginx reload
@@ -65,9 +65,7 @@ echo "✅ Yönlendirme ve SSL kurulumu tamamlandı!"
 echo ""
 echo "📋 Domain yönlendirmeleri:"
 echo "   - dugunkarem.com → Port 3040 (premiumfoto)"
-echo "   - www.dugunkarem.com → Port 3040 (premiumfoto)"
 echo "   - dugunkarem.com.tr → Port 3040 (premiumfoto)"
-echo "   - www.dugunkarem.com.tr → Port 3040 (premiumfoto)"
 echo ""
 echo "📋 Test:"
 echo "   curl -I https://dugunkarem.com"
