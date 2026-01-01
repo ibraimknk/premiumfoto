@@ -59,17 +59,71 @@ else
     echo -e "${YELLOW}Proje klonlanıyor...${NC}"
     cd /home/ibrahim
     
-    # SSH veya HTTPS ile klonla
-    if git clone "git@github.com:ibraimknk/dugunkarem.git" "$APP_DIR" 2>/dev/null; then
-        echo -e "${GREEN}✅ SSH ile klonlandı${NC}"
-    elif git clone "$GIT_REPO" "$APP_DIR" 2>/dev/null; then
-        echo -e "${GREEN}✅ HTTPS ile klonlandı${NC}"
+    # SSH key kontrolü
+    SSH_KEY_EXISTS=false
+    if [ -f ~/.ssh/id_rsa ] || [ -f ~/.ssh/id_ed25519 ]; then
+        SSH_KEY_EXISTS=true
+        echo -e "${GREEN}✅ SSH key bulundu${NC}"
     else
+        echo -e "${YELLOW}⚠️ SSH key bulunamadı${NC}"
+    fi
+    
+    # GitHub host key'i ekle (interaktif soruyu önlemek için)
+    if ! grep -q "github.com" ~/.ssh/known_hosts 2>/dev/null; then
+        echo -e "${YELLOW}📝 GitHub host key ekleniyor...${NC}"
+        ssh-keyscan -t rsa,ed25519 github.com >> ~/.ssh/known_hosts 2>/dev/null || true
+    fi
+    
+    # Clone denemeleri
+    CLONE_SUCCESS=false
+    
+    # 1. SSH ile clone dene
+    if [ "$SSH_KEY_EXISTS" = true ]; then
+        echo -e "${YELLOW}🔑 SSH ile clone deneniyor...${NC}"
+        if GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no" git clone "git@github.com:ibraimknk/dugunkarem.git" "$APP_DIR" 2>/dev/null; then
+            echo -e "${GREEN}✅ SSH ile klonlandı${NC}"
+            CLONE_SUCCESS=true
+        fi
+    fi
+    
+    # 2. HTTPS ile clone dene (public repo ise)
+    if [ "$CLONE_SUCCESS" = false ]; then
+        echo -e "${YELLOW}🌐 HTTPS ile clone deneniyor (public repo)...${NC}"
+        if git clone "$GIT_REPO" "$APP_DIR" 2>/dev/null; then
+            echo -e "${GREEN}✅ HTTPS ile klonlandı${NC}"
+            CLONE_SUCCESS=true
+        fi
+    fi
+    
+    # 3. Başarısız olursa kullanıcıya talimat ver
+    if [ "$CLONE_SUCCESS" = false ]; then
         echo -e "${RED}❌ Git clone başarısız!${NC}"
-        echo -e "${YELLOW}💡 Manuel klonlama gerekebilir:${NC}"
-        echo "   git clone https://github.com/ibraimknk/dugunkarem.git $APP_DIR"
-        echo "   VEYA"
-        echo "   git clone git@github.com:ibraimknk/dugunkarem.git $APP_DIR"
+        echo ""
+        echo -e "${YELLOW}💡 Çözüm seçenekleri:${NC}"
+        echo ""
+        echo -e "${YELLOW}1️⃣ SSH Key ile (Önerilen):${NC}"
+        echo "   # SSH key oluştur:"
+        echo "   ssh-keygen -t ed25519 -C \"your_email@example.com\""
+        echo "   # Public key'i göster:"
+        echo "   cat ~/.ssh/id_ed25519.pub"
+        echo "   # GitHub → Settings → SSH and GPG keys → New SSH key"
+        echo "   # Sonra tekrar çalıştır:"
+        echo "   bash deploy-dugunkarem.sh"
+        echo ""
+        echo -e "${YELLOW}2️⃣ Personal Access Token ile:${NC}"
+        echo "   # GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)"
+        echo "   # 'repo' yetkisi ile token oluştur"
+        echo "   # Sonra manuel clone:"
+        echo "   cd /home/ibrahim"
+        echo "   git clone https://YOUR_TOKEN@github.com/ibraimknk/dugunkarem.git dugunkarem"
+        echo "   # Sonra deploy script'ini tekrar çalıştır:"
+        echo "   cd ~/premiumfoto && bash deploy-dugunkarem.sh"
+        echo ""
+        echo -e "${YELLOW}3️⃣ Manuel clone (zaten yapıldıysa):${NC}"
+        echo "   # Eğer projeyi zaten manuel klonladıysanız, script'i tekrar çalıştırın:"
+        echo "   cd ~/premiumfoto && bash deploy-dugunkarem.sh"
+        echo ""
+        echo -e "${YELLOW}⚠️ Repository private ise SSH key veya Personal Access Token gerekli!${NC}"
         exit 1
     fi
     
