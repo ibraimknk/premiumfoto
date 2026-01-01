@@ -17,13 +17,13 @@ echo -e "${YELLOW}🔧 dugunkarem.com için ayrı config dosyası oluşturuluyor
 # foto-ugur config'inden dugunkarem.com server block'unu al
 FOTO_UGUR_CONFIG="/etc/nginx/sites-available/foto-ugur"
 
-# dugunkarem.com için server block'u bul
-DUGUNKAREM_SSL_BLOCK=$(sudo grep -A 30 "# dugunkarem.com SSL yapılandırması" "$FOTO_UGUR_CONFIG" | grep -A 30 "server {" | head -35)
-DUGUNKAREM_REDIRECT_BLOCK=$(sudo grep -A 20 "# dugunkarem.com HTTP" "$FOTO_UGUR_CONFIG" | grep -A 20 "server {" | head -25)
-
-if [ -z "$DUGUNKAREM_SSL_BLOCK" ]; then
-    echo -e "${RED}❌ dugunkarem.com server block'u bulunamadı!${NC}"
-    exit 1
+# dugunkarem.com için server block'u kontrol et
+if sudo grep -q "dugunkarem.com" "$FOTO_UGUR_CONFIG"; then
+    echo -e "${YELLOW}⚠️  foto-ugur config'inde dugunkarem.com block'u bulundu, kaldırılacak...${NC}"
+    REMOVE_FROM_FOTO_UGUR=true
+else
+    echo -e "${GREEN}✅ foto-ugur config'inde dugunkarem.com block'u yok${NC}"
+    REMOVE_FROM_FOTO_UGUR=false
 fi
 
 # Yeni config dosyası oluştur
@@ -82,32 +82,46 @@ EOF
 echo -e "${GREEN}✅ Config dosyası oluşturuldu${NC}"
 
 # foto-ugur config'inden dugunkarem.com block'larını kaldır
-echo -e "${YELLOW}📝 foto-ugur config'inden dugunkarem.com block'ları kaldırılıyor...${NC}"
-
-sudo python3 << 'PYEOF'
-import re
-
-config_file = "/etc/nginx/sites-available/foto-ugur"
-
-with open(config_file, 'r') as f:
-    content = f.read()
-
-# dugunkarem.com SSL block'unu kaldır
-pattern_ssl = r'# dugunkarem\.com SSL yapılandırması\s*server\s*\{[^}]*server_name\s+dugunkarem\.com\s+dugunkarem\.com\.tr[^}]*listen\s+443[^}]*\}[^}]*\}'
-content = re.sub(pattern_ssl, '', content, flags=re.DOTALL)
-
-# dugunkarem.com HTTP redirect block'unu kaldır
-pattern_redirect = r'# dugunkarem\.com HTTP[^}]*server\s*\{[^}]*server_name\s+dugunkarem\.com\s+dugunkarem\.com\.tr[^}]*listen\s+80[^}]*\}[^}]*\}'
-content = re.sub(pattern_redirect, '', content, flags=re.DOTALL)
-
-# Çoklu boş satırları temizle
-content = re.sub(r'\n\n\n+', '\n\n', content)
-
-with open(config_file, 'w') as f:
-    f.write(content)
-
-print("✅ foto-ugur config'inden dugunkarem.com block'ları kaldırıldı")
-PYEOF
+if [ "$REMOVE_FROM_FOTO_UGUR" = true ]; then
+    echo -e "${YELLOW}📝 foto-ugur config'inden dugunkarem.com block'ları kaldırılıyor...${NC}"
+    
+    # Geçici dosya oluştur
+    TEMP_FILE=$(mktemp)
+    
+    # dugunkarem.com içeren satırları ve sonraki server block'larını kaldır
+    sudo awk '
+    /dugunkarem\.com/ {
+        in_block = 1
+        skip = 1
+    }
+    skip && /^[[:space:]]*server[[:space:]]*\{/ {
+        brace_count = 1
+        skip = 1
+    }
+    skip && /\{/ {
+        brace_count++
+    }
+    skip && /\}/ {
+        brace_count--
+        if (brace_count == 0) {
+            skip = 0
+            next
+        }
+    }
+    !skip {
+        print
+    }
+    ' "$FOTO_UGUR_CONFIG" > "$TEMP_FILE"
+    
+    # Çoklu boş satırları temizle
+    sudo sed -i '/^$/N;/^\n$/d' "$TEMP_FILE"
+    
+    # Dosyayı değiştir
+    sudo mv "$TEMP_FILE" "$FOTO_UGUR_CONFIG"
+    sudo chmod 644 "$FOTO_UGUR_CONFIG"
+    
+    echo -e "${GREEN}✅ foto-ugur config'inden dugunkarem.com block'ları kaldırıldı${NC}"
+fi
 
 # Yeni config'i aktif et
 echo -e "${YELLOW}📝 Yeni config aktif ediliyor...${NC}"
