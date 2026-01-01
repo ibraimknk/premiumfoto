@@ -15,7 +15,7 @@ NC='\033[0m' # No Color
 PROJECT_NAME="dugunkarem"
 GIT_REPO="https://github.com/ibraimknk/dugunkarem.git"
 APP_DIR="/home/ibrahim/${PROJECT_NAME}"
-APP_PORT=3041
+APP_PORT=3042
 PM2_APP_NAME="dugunkarem-app"
 DOMAIN="dugunkarem.com"
 
