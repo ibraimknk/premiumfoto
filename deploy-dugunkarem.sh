@@ -52,11 +52,27 @@ echo -e "${YELLOW}📁 Proje dizini hazırlanıyor...${NC}"
 if [ -d "$APP_DIR" ]; then
     echo -e "${YELLOW}Mevcut proje güncelleniyor...${NC}"
     cd "$APP_DIR"
-    git pull origin main || git pull origin master
+    # Yerel değişiklikleri stash et
+    git stash || true
+    git pull origin main || git pull origin master || echo -e "${YELLOW}⚠️ Git pull başarısız, devam ediliyor...${NC}"
 else
     echo -e "${YELLOW}Proje klonlanıyor...${NC}"
     cd /home/ibrahim
-    git clone "$GIT_REPO" "$APP_DIR"
+    
+    # SSH veya HTTPS ile klonla
+    if git clone "git@github.com:ibraimknk/dugunkarem.git" "$APP_DIR" 2>/dev/null; then
+        echo -e "${GREEN}✅ SSH ile klonlandı${NC}"
+    elif git clone "$GIT_REPO" "$APP_DIR" 2>/dev/null; then
+        echo -e "${GREEN}✅ HTTPS ile klonlandı${NC}"
+    else
+        echo -e "${RED}❌ Git clone başarısız!${NC}"
+        echo -e "${YELLOW}💡 Manuel klonlama gerekebilir:${NC}"
+        echo "   git clone https://github.com/ibraimknk/dugunkarem.git $APP_DIR"
+        echo "   VEYA"
+        echo "   git clone git@github.com:ibraimknk/dugunkarem.git $APP_DIR"
+        exit 1
+    fi
+    
     cd "$APP_DIR"
 fi
 
