@@ -206,6 +206,7 @@ cd "$APP_DIR"
 # package.json kontrolü (root veya frontend dizininde)
 PACKAGE_JSON_PATH=""
 WORK_DIR="$APP_DIR"
+SKIP_NPM=false
 
 if [ -f "package.json" ]; then
     PACKAGE_JSON_PATH="package.json"
