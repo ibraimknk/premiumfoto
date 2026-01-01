@@ -21,10 +21,33 @@ fi
 # Sertifika dosyalarının varlığını kontrol et
 CERT_PATH="/etc/letsencrypt/live/dugunkarem.com"
 if [ ! -f "$CERT_PATH/fullchain.pem" ] || [ ! -f "$CERT_PATH/privkey.pem" ]; then
-    echo -e "${RED}❌ SSL sertifikası bulunamadı: $CERT_PATH${NC}"
-    echo -e "${YELLOW}💡 Önce sertifikayı oluşturun:${NC}"
-    echo "   sudo certbot --nginx -d dugunkarem.com -d dugunkarem.com.tr --expand"
-    exit 1
+    echo -e "${YELLOW}⚠️  Sertifika dosyaları bulunamadı, kontrol ediliyor...${NC}"
+    # Sertifika dosyalarını ara
+    if [ -d "/etc/letsencrypt/live" ]; then
+        echo -e "${YELLOW}📋 Mevcut sertifikalar:${NC}"
+        ls -la /etc/letsencrypt/live/ | grep dugunkarem || echo "   dugunkarem sertifikası bulunamadı"
+    fi
+    
+    # Certbot'un oluşturduğu sertifikayı kontrol et
+    if sudo certbot certificates 2>/dev/null | grep -q "dugunkarem.com"; then
+        echo -e "${GREEN}✅ Certbot sertifikayı buldu, devam ediliyor...${NC}"
+        # Sertifika path'ini certbot'tan al
+        CERT_NAME=$(sudo certbot certificates 2>/dev/null | grep -A 5 "dugunkarem.com" | grep "Certificate Path" | awk '{print $3}' | head -1 | xargs dirname 2>/dev/null || echo "$CERT_PATH")
+        if [ -f "$CERT_NAME/fullchain.pem" ]; then
+            CERT_PATH="$CERT_NAME"
+            echo -e "${GREEN}✅ Sertifika bulundu: $CERT_PATH${NC}"
+        else
+            echo -e "${RED}❌ SSL sertifikası bulunamadı: $CERT_PATH${NC}"
+            echo -e "${YELLOW}💡 Önce sertifikayı oluşturun:${NC}"
+            echo "   sudo certbot --nginx -d dugunkarem.com -d dugunkarem.com.tr --expand"
+            exit 1
+        fi
+    else
+        echo -e "${RED}❌ SSL sertifikası bulunamadı: $CERT_PATH${NC}"
+        echo -e "${YELLOW}💡 Önce sertifikayı oluşturun:${NC}"
+        echo "   sudo certbot --nginx -d dugunkarem.com -d dugunkarem.com.tr --expand"
+        exit 1
+    fi
 fi
 
 echo -e "${GREEN}✅ SSL sertifikası bulundu${NC}"
