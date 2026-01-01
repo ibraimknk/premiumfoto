@@ -316,15 +316,15 @@ fi
 
 echo -e "${YELLOW}🚀 PM2 uygulaması başlatılıyor...${NC}"
 
-# PM2 ecosystem dosyası oluştur (CRA için serve kullan)
-if [ -d "build" ]; then
-    # CRA projesi - serve kullan
-    cat > "$WORK_DIR/ecosystem.config.js" << PM2EOF
+    # PM2 ecosystem dosyası oluştur (CRA için serve kullan)
+    if [ -d "build" ]; then
+        # CRA projesi - serve kullan (args array olarak)
+        cat > "$WORK_DIR/ecosystem.config.js" << PM2EOF
 module.exports = {
   apps: [{
     name: '${PM2_APP_NAME}',
     script: 'serve',
-    args: '-s build -l ${APP_PORT}',
+    args: ['-s', 'build', '-l', '${APP_PORT}'],
     cwd: '${WORK_DIR}',
     env: {
       NODE_ENV: 'production',
