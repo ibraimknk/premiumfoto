@@ -231,6 +231,12 @@ if [ "$SKIP_NPM" = false ]; then
     echo -e "${YELLOW}📦 NPM paketleri kuruluyor...${NC}"
     cd "$WORK_DIR"
     
+    # Eski node_modules'i temizle (sorun çıkarsa)
+    if [ -d "node_modules" ]; then
+        echo -e "${YELLOW}🧹 Eski node_modules temizleniyor...${NC}"
+        rm -rf node_modules
+    fi
+    
     # package-lock.json varsa npm ci, yoksa npm install
     if [ -f "package-lock.json" ]; then
         echo -e "${YELLOW}📦 package-lock.json bulundu, npm ci kullanılıyor...${NC}"
@@ -238,6 +244,12 @@ if [ "$SKIP_NPM" = false ]; then
     else
         echo -e "${YELLOW}📦 package-lock.json bulunamadı, npm install kullanılıyor...${NC}"
         npm install --legacy-peer-deps
+    fi
+    
+    # ajv paketini kontrol et ve gerekirse yeniden kur
+    if [ ! -d "node_modules/ajv/dist/compile" ]; then
+        echo -e "${YELLOW}🔧 ajv paketi eksik, yeniden kuruluyor...${NC}"
+        npm install ajv@^8.0.0 --legacy-peer-deps --save-dev || npm install ajv --legacy-peer-deps
     fi
 else
     echo -e "${YELLOW}⚠️ NPM kurulumu atlandı (package.json yok)${NC}"
