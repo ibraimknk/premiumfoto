@@ -254,24 +254,27 @@ fi
 
 # Production build
 echo -e "${YELLOW}🏗️  Production build oluşturuluyor...${NC}"
-if [ -d "$APP_DIR/.next" ]; then
-    rm -rf "$APP_DIR/.next"
+cd "$WORK_DIR"
+
+# Next.js için .next, CRA için build klasörü
+if [ -d ".next" ]; then
+    rm -rf ".next"
+elif [ -d "build" ]; then
+    rm -rf "build"
 fi
 
-# package.json'da start script'i kontrol et ve güncelle
-if [ -f "$APP_DIR/package.json" ]; then
-    # PORT'u package.json'da güncelle (eğer start script'i varsa)
-    if grep -q '"start"' "$APP_DIR/package.json"; then
-        # start script'inde port varsa güncelle, yoksa ekle
-        if grep -q '"start".*"-p"' "$APP_DIR/package.json"; then
-            sed -i "s|\"start\".*\"-p\"[^,]*|\"start\": \"next start -p ${APP_PORT}\"|g" "$APP_DIR/package.json"
-        else
-            sed -i "s|\"start\":[^,]*|\"start\": \"next start -p ${APP_PORT}\"|g" "$APP_DIR/package.json"
-        fi
-    fi
-fi
-
+# Build yap
 npm run build
+
+# Build sonrası kontrol
+if [ -d "build" ]; then
+    echo -e "${GREEN}✅ CRA build başarılı (build klasörü)${NC}"
+elif [ -d ".next" ]; then
+    echo -e "${GREEN}✅ Next.js build başarılı (.next klasörü)${NC}"
+else
+    echo -e "${RED}❌ Build klasörü bulunamadı!${NC}"
+    SKIP_BUILD=true
+fi
 
 # Uploads dizini oluşturma
 echo -e "${YELLOW}📁 Uploads dizini oluşturuluyor...${NC}"
