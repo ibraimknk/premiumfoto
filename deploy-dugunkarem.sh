@@ -341,9 +341,16 @@ echo -e "${YELLOW}🌐 Nginx konfigürasyonu oluşturuluyor...${NC}"
 # Mevcut foto-ugur config'ini kontrol et
 FOTO_UGUR_CONFIG="/etc/nginx/sites-available/foto-ugur"
 if [ -f "$FOTO_UGUR_CONFIG" ]; then
-    # foto-ugur config'inden dugunkarem.com'u çıkar
+    echo -e "${YELLOW}🔧 foto-ugur config'inden dugunkarem.com domain'leri çıkarılıyor...${NC}"
+    # foto-ugur config'inden dugunkarem.com domain'lerini çıkar
     sudo sed -i "s/dugunkarem\.com //g" "$FOTO_UGUR_CONFIG"
     sudo sed -i "s/www\.dugunkarem\.com //g" "$FOTO_UGUR_CONFIG"
+    sudo sed -i "s/dugunkarem\.com\.tr //g" "$FOTO_UGUR_CONFIG"
+    sudo sed -i "s/www\.dugunkarem\.com\.tr //g" "$FOTO_UGUR_CONFIG"
+    # Birden fazla boşlukları temizle
+    sudo sed -i 's/server_name  */server_name /g' "$FOTO_UGUR_CONFIG"
+    sudo sed -i 's/server_name  */server_name /g' "$FOTO_UGUR_CONFIG"
+    echo -e "${GREEN}✅ foto-ugur config güncellendi${NC}"
 fi
 
 # Dugunkarem.com için yeni config oluştur
