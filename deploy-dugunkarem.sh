@@ -199,17 +199,41 @@ else
     fi
 fi
 
-# Bağımlılıkların kurulumu
-echo -e "${YELLOW}📦 NPM paketleri kuruluyor...${NC}"
+# Proje yapısını kontrol et
+echo -e "${YELLOW}🔍 Proje yapısı kontrol ediliyor...${NC}"
 cd "$APP_DIR"
 
-# package-lock.json varsa npm ci, yoksa npm install
-if [ -f "package-lock.json" ]; then
-    echo -e "${YELLOW}📦 package-lock.json bulundu, npm ci kullanılıyor...${NC}"
-    npm ci --production=false
+# Dizin içeriğini listele
+echo -e "${YELLOW}📁 Dizin içeriği:${NC}"
+ls -la
+
+# package.json kontrolü
+if [ ! -f "package.json" ]; then
+    echo -e "${RED}❌ package.json bulunamadı!${NC}"
+    echo -e "${YELLOW}💡 Repository boş olabilir veya farklı bir yapıda olabilir.${NC}"
+    echo -e "${YELLOW}📋 Repository içeriği:${NC}"
+    ls -la
+    echo ""
+    echo -e "${YELLOW}⚠️ package.json bulunamadı, npm kurulumu atlanıyor...${NC}"
+    SKIP_NPM=true
 else
-    echo -e "${YELLOW}📦 package-lock.json bulunamadı, npm install kullanılıyor...${NC}"
-    npm install
+    SKIP_NPM=false
+fi
+
+# Bağımlılıkların kurulumu
+if [ "$SKIP_NPM" = false ]; then
+    echo -e "${YELLOW}📦 NPM paketleri kuruluyor...${NC}"
+    
+    # package-lock.json varsa npm ci, yoksa npm install
+    if [ -f "package-lock.json" ]; then
+        echo -e "${YELLOW}📦 package-lock.json bulundu, npm ci kullanılıyor...${NC}"
+        npm ci --production=false
+    else
+        echo -e "${YELLOW}📦 package-lock.json bulunamadı, npm install kullanılıyor...${NC}"
+        npm install
+    fi
+else
+    echo -e "${YELLOW}⚠️ NPM kurulumu atlandı (package.json yok)${NC}"
 fi
 
 # Prisma client oluşturma
