@@ -234,10 +234,10 @@ if [ "$SKIP_NPM" = false ]; then
     # package-lock.json varsa npm ci, yoksa npm install
     if [ -f "package-lock.json" ]; then
         echo -e "${YELLOW}📦 package-lock.json bulundu, npm ci kullanılıyor...${NC}"
-        npm ci --production=false
+        npm ci --production=false --legacy-peer-deps
     else
         echo -e "${YELLOW}📦 package-lock.json bulunamadı, npm install kullanılıyor...${NC}"
-        npm install
+        npm install --legacy-peer-deps
     fi
 else
     echo -e "${YELLOW}⚠️ NPM kurulumu atlandı (package.json yok)${NC}"
