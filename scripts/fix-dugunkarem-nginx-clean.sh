@@ -52,8 +52,8 @@ fi
 # Son kontrol - tekrar eden domain'leri kaldır
 echo -e "${YELLOW}🔍 Tekrar eden domain'ler kontrol ediliyor...${NC}"
 
-# Python script ile unique domain'leri al
-python3 << 'PYEOF'
+# Python script ile unique domain'leri al (sudo ile)
+sudo python3 << 'PYEOF'
 import re
 import sys
 
