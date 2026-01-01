@@ -59,10 +59,11 @@ echo ""
 echo "🔒 SSL sertifikası kuruluyor..."
 
 # Certbot ile SSL kur (sadece ana domain'ler için, www yok)
-sudo certbot --nginx -d dugunkarem.com -d dugunkarem.com.tr --non-interactive --agree-tos --email ibrahim@example.com 2>&1 || {
+# --expand flag'i mevcut sertifikayı genişletmek için gerekli
+sudo certbot --nginx -d dugunkarem.com -d dugunkarem.com.tr --expand --non-interactive --agree-tos --email ibrahim@example.com 2>&1 || {
     echo "⚠️ Certbot başarısız, manuel kurulum gerekebilir"
     echo "💡 Manuel kurulum:"
-    echo "   sudo certbot --nginx -d dugunkarem.com -d dugunkarem.com.tr"
+    echo "   sudo certbot --nginx -d dugunkarem.com -d dugunkarem.com.tr --expand"
 }
 
 # Nginx reload
