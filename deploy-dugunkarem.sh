@@ -50,6 +50,7 @@ fi
 # Proje dizinini oluştur veya güncelle
 echo -e "${YELLOW}📁 Proje dizini hazırlanıyor...${NC}"
 if [ -d "$APP_DIR" ]; then
+    echo -e "${GREEN}✅ Proje dizini mevcut: $APP_DIR${NC}"
     echo -e "${YELLOW}Mevcut proje güncelleniyor...${NC}"
     cd "$APP_DIR"
     # Yerel değişiklikleri stash et
@@ -201,7 +202,15 @@ fi
 # Bağımlılıkların kurulumu
 echo -e "${YELLOW}📦 NPM paketleri kuruluyor...${NC}"
 cd "$APP_DIR"
-npm ci --production=false
+
+# package-lock.json varsa npm ci, yoksa npm install
+if [ -f "package-lock.json" ]; then
+    echo -e "${YELLOW}📦 package-lock.json bulundu, npm ci kullanılıyor...${NC}"
+    npm ci --production=false
+else
+    echo -e "${YELLOW}📦 package-lock.json bulunamadı, npm install kullanılıyor...${NC}"
+    npm install
+fi
 
 # Prisma client oluşturma
 echo -e "${YELLOW}🗄️  Prisma client oluşturuluyor...${NC}"
