@@ -68,6 +68,14 @@ else
     # Alternatif: r.map() kullanımlarını da düzelt
     sed -i 's/\([a-zA-Z_$][a-zA-Z0-9_$]*\)\.map(/\(Array.isArray(\1) ? \1 : \[\]\).map(/g' "$HOMEPAGE_FILE"
     
+    # servi is not defined hatası - muhtemelen services olmalı
+    echo "🔧 HomePage.js: servi -> services düzeltiliyor..."
+    sed -i 's/\bservi\b/services/g' "$HOMEPAGE_FILE"
+    
+    # Diğer yaygın typo'lar
+    sed -i 's/\bservic\b/services/g' "$HOMEPAGE_FILE"
+    sed -i 's/\bservice\b/services/g' "$HOMEPAGE_FILE"  # Dikkatli: service -> services olabilir
+    
     echo "✅ HomePage.js düzeltildi!"
 fi
 
