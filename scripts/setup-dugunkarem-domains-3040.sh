@@ -18,8 +18,16 @@ echo "📝 foto-ugur config güncelleniyor..."
 CURRENT_SERVER_NAME=$(grep "server_name" "$FOTO_UGUR_CONFIG" | head -1 | sed 's/server_name//' | sed 's/;//' | xargs)
 
 # dugunkarem.com ve dugunkarem.com.tr ekle (eğer yoksa)
+# Önce mevcut www subdomain'lerini temizle (DNS kayıtları yok)
+sudo sed -i "s/www\.dugunkarem\.com //g" "$FOTO_UGUR_CONFIG"
+sudo sed -i "s/www\.dugunkarem\.com\.tr //g" "$FOTO_UGUR_CONFIG"
+sudo sed -i 's/server_name  */server_name /g' "$FOTO_UGUR_CONFIG"
+
+# Mevcut server_name'i tekrar al (temizlemeden sonra)
+CURRENT_SERVER_NAME=$(grep "server_name" "$FOTO_UGUR_CONFIG" | head -1 | sed 's/server_name//' | sed 's/;//' | xargs)
+
 if ! echo "$CURRENT_SERVER_NAME" | grep -q "dugunkarem\.com"; then
-    NEW_SERVER_NAME="$CURRENT_SERVER_NAME dugunkarem.com www.dugunkarem.com dugunkarem.com.tr www.dugunkarem.com.tr"
+    NEW_SERVER_NAME="$CURRENT_SERVER_NAME dugunkarem.com dugunkarem.com.tr"
     sudo sed -i "s/server_name.*;/server_name $NEW_SERVER_NAME;/" "$FOTO_UGUR_CONFIG"
     echo "✅ dugunkarem domain'leri eklendi"
 else
