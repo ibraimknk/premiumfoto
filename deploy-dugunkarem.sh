@@ -86,12 +86,20 @@ else
         fi
     fi
     
-    # 2. HTTPS ile clone dene (public repo ise)
+    # 2. HTTPS ile clone dene (public repo ise, non-interactive)
     if [ "$CLONE_SUCCESS" = false ]; then
-        echo -e "${YELLOW}🌐 HTTPS ile clone deneniyor (public repo)...${NC}"
-        if git clone "$GIT_REPO" "$APP_DIR" 2>/dev/null; then
+        echo -e "${YELLOW}🌐 HTTPS ile clone deneniyor (public repo, non-interactive)...${NC}"
+        # GIT_TERMINAL_PROMPT=0 ile interaktif prompt'u devre dışı bırak
+        if GIT_TERMINAL_PROMPT=0 git clone "$GIT_REPO" "$APP_DIR" 2>/dev/null; then
             echo -e "${GREEN}✅ HTTPS ile klonlandı${NC}"
             CLONE_SUCCESS=true
+        else
+            # Alternatif: Direkt public URL ile dene
+            echo -e "${YELLOW}🔄 Alternatif yöntem deneniyor...${NC}"
+            if GIT_TERMINAL_PROMPT=0 GIT_ASKPASS=echo git clone "$GIT_REPO" "$APP_DIR" 2>/dev/null; then
+                echo -e "${GREEN}✅ HTTPS ile klonlandı (alternatif yöntem)${NC}"
+                CLONE_SUCCESS=true
+            fi
         fi
     fi
     

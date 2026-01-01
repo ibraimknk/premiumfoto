@@ -13,9 +13,13 @@ cd "$(dirname "$0")/.." || exit 1
 echo "1️⃣ Yerel değişiklikler stash ediliyor..."
 git stash
 
+# Yerel değişiklikleri at (eğer stash yeterli değilse)
+echo "2️⃣ Yerel değişiklikler atılıyor (deploy-dugunkarem.sh)..."
+git checkout -- deploy-dugunkarem.sh 2>/dev/null || true
+
 # Güncellemeleri çek
 echo ""
-echo "2️⃣ Güncellemeler çekiliyor..."
+echo "3️⃣ Güncellemeler çekiliyor..."
 git pull origin main
 
 # Stash'ten değişiklikleri geri al (eğer varsa)
