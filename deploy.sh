@@ -266,13 +266,12 @@ pm2 status
 echo -e "${GREEN}✅ PM2 uygulaması başlatıldı${NC}"
 echo -e "${YELLOW}💡 Logları görmek için: pm2 logs ${PM2_APP_NAME}${NC}"
 
-# Nginx konfigürasyonu (fotougur.com.tr ve dugunkarem.com.tr için)
-# Not: dugunkarem.com ayrı bir projede çalışacak
-echo -e "${YELLOW}🌐 Nginx konfigürasyonu oluşturuluyor (fotougur.com.tr ve dugunkarem.com.tr)...${NC}"
+# Nginx konfigürasyonu (fotougur.com.tr, dugunkarem.com ve dugunkarem.com.tr için)
+echo -e "${YELLOW}🌐 Nginx konfigürasyonu oluşturuluyor (fotougur.com.tr, dugunkarem.com ve dugunkarem.com.tr)...${NC}"
 cat > /etc/nginx/sites-available/${APP_NAME} << EOF
 server {
     listen 80;
-    server_name fotougur.com.tr www.fotougur.com.tr dugunkarem.com.tr www.dugunkarem.com.tr;
+    server_name fotougur.com.tr www.fotougur.com.tr dugunkarem.com www.dugunkarem.com dugunkarem.com.tr www.dugunkarem.com.tr;
 
     client_max_body_size 50M;
 
