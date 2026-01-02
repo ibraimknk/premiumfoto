@@ -51,10 +51,55 @@ async function findBlogUrlsFromGoogle(query: string = "site:fotougur.com.tr/blog
 }
 
 /**
+ * CSV dosyasından blog URL'lerini oku
+ */
+async function findBlogUrlsFromCSV(csvPath: string = "blog_urls_only.csv"): Promise<string[]> {
+  const urls: string[] = []
+  const fs = await import('fs/promises')
+  const path = await import('path')
+
+  try {
+    const csvContent = await fs.readFile(csvPath, 'utf-8')
+    const lines = csvContent.split('\n').filter(line => line.trim())
+    
+    // İlk satır başlık, atla
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim()
+      if (!line) continue
+      
+      // CSV formatı: url,verdict,coverageState,lastCrawlTime
+      const parts = line.split(',')
+      if (parts.length > 0) {
+        const url = parts[0].trim().replace(/^"|"$/g, '') // Tırnak işaretlerini kaldır
+        if (url && url.includes('/blog/')) {
+          urls.push(url)
+        }
+      }
+    }
+
+    console.log(`✅ CSV'den ${urls.length} blog URL'i bulundu`)
+  } catch (error: any) {
+    if (error.code === 'ENOENT') {
+      console.log(`⚠️  CSV dosyası bulunamadı: ${csvPath}`)
+    } else {
+      console.error("❌ CSV okuma hatası:", error.message)
+    }
+  }
+
+  return urls
+}
+
+/**
  * Alternatif yöntem: Sitemap.xml veya manuel URL listesi
  */
 async function findBlogUrlsAlternative(): Promise<string[]> {
   const urls: string[] = []
+
+  // Önce CSV dosyasını kontrol et (google.py script'inden gelen)
+  const csvUrls = await findBlogUrlsFromCSV()
+  if (csvUrls.length > 0) {
+    return csvUrls
+  }
 
   try {
     // Sitemap.xml'den blog URL'lerini çek
