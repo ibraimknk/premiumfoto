@@ -12,7 +12,7 @@ NC='\033[0m'
 APP_NAME="fikirtepetekelpaket"
 APP_PORT=3001
 PM2_APP_NAME="fikirtepetekelpaket-app"
-APP_DIR="/home/ibrahim/${APP_NAME}"
+APP_DIR="/var/www/fikirtepetekelpaket.com"
 
 echo -e "${YELLOW}🚀 ${APP_NAME} uygulaması port ${APP_PORT}'de başlatılıyor...${NC}"
 

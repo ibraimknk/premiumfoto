@@ -11,7 +11,7 @@ NC='\033[0m'
 
 PM2_APP_NAME="fikirtepetekelpaket-app"
 APP_PORT=3001
-APP_DIR="/home/ibrahim/premiumfoto"
+APP_DIR="/var/www/fikirtepetekelpaket.com"
 
 echo -e "${YELLOW}🔧 ${PM2_APP_NAME} port ${APP_PORT}'e güncelleniyor...${NC}"
 
