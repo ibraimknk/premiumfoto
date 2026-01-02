@@ -27,7 +27,8 @@
     "fix-pm2-env": "bash scripts/fix-pm2-env.sh",
     "fix-blog-images": "node scripts/fix-blog-images.js",
     "fix-git-conflict": "bash scripts/fix-git-conflict.sh",
-    "fix-dugunkarem-nginx": "bash scripts/fix-dugunkarem-nginx.sh"
+    "fix-dugunkarem-nginx": "bash scripts/fix-dugunkarem-nginx.sh",
+    "regenerate-blogs": "tsx scripts/regenerate-blogs-from-google.ts"
   },
   "dependencies": {
     "next": "^14.2.0",
@@ -57,7 +58,8 @@
     "@radix-ui/react-tabs": "^1.1.0",
     "@radix-ui/react-toast": "^1.2.1",
     "@google/generative-ai": "^0.21.0",
-    "sharp": "^0.33.5"
+    "sharp": "^0.33.5",
+    "cheerio": "^1.0.0"
   },
   "devDependencies": {
     "typescript": "^5.5.0",
@@ -65,6 +67,7 @@
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
     "@types/bcryptjs": "^2.4.6",
+    "@types/cheerio": "^0.22.35",
     "prisma": "^5.19.0",
     "tsx": "^4.16.0",
     "autoprefixer": "^10.4.19",
