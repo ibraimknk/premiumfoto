@@ -11,8 +11,8 @@ NC='\033[0m'
 
 echo -e "${YELLOW}🔧 fikirtepetekelpaket.com sertifika referansları kaldırılıyor...${NC}"
 
-# Python3 ile tüm Nginx config dosyalarını düzenle
-python3 << 'PYEOF'
+# Python3 ile tüm Nginx config dosyalarını düzenle (sudo ile)
+sudo python3 << 'PYEOF'
 import os
 import re
 import glob
