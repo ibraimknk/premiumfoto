@@ -30,7 +30,8 @@
     "fix-dugunkarem-nginx": "bash scripts/fix-dugunkarem-nginx.sh",
     "regenerate-blogs": "tsx scripts/regenerate-blogs-from-google.ts",
     "regenerate-blogs-from-urls": "tsx scripts/regenerate-blogs-from-url-list.ts",
-    "regenerate-failed-blogs": "tsx scripts/regenerate-failed-blogs.ts"
+    "regenerate-failed-blogs": "tsx scripts/regenerate-failed-blogs.ts",
+    "create-blog": "tsx scripts/create-single-blog.ts"
   },
   "dependencies": {
     "next": "^14.2.0",
