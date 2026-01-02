@@ -36,6 +36,8 @@ sudo python3 << PYEOF
 import re
 
 config_file = "${FOTO_UGUR_CONFIG}"
+domain = "${DOMAIN}"
+cert_path = "${CERT_PATH}"
 
 with open(config_file, 'r') as f:
     content = f.read()
@@ -48,10 +50,10 @@ if not has_dugunkarem_ssl_block:
     ssl_block = f'''# dugunkarem.com.tr SSL yapılandırması (Port 3040 - premiumfoto)
 server {{
     listen 443 ssl http2;
-    server_name {DOMAIN} www.{DOMAIN};
+    server_name {domain} www.{domain};
     
-    ssl_certificate ${CERT_PATH}/fullchain.pem;
-    ssl_certificate_key ${CERT_PATH}/privkey.pem;
+    ssl_certificate {cert_path}/fullchain.pem;
+    ssl_certificate_key {cert_path}/privkey.pem;
     include /etc/letsencrypt/options-ssl-nginx.conf;
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
     
@@ -85,7 +87,7 @@ server {{
 else:
     print("ℹ️  SSL server block zaten mevcut, güncelleniyor...")
     # Mevcut block'u güncelle
-    pattern = r'(# dugunkarem\.com\.tr SSL[^}]*server\s*\{[^}]*listen\s+443[^}]*server_name[^}]*' + re.escape(DOMAIN) + r'[^}]*)(.*?)(\})'
+    pattern = r'(# dugunkarem\.com\.tr SSL[^}]*server\s*\{[^}]*listen\s+443[^}]*server_name[^}]*' + re.escape(domain) + r'[^}]*)(.*?)(\})'
     
     def update_ssl_block(match):
         block_start = match.group(1)
@@ -93,8 +95,8 @@ else:
         block_end = match.group(3)
         
         # SSL sertifika path'lerini düzelt
-        block_start = re.sub(r'ssl_certificate\s+[^;]+;', f'ssl_certificate ${CERT_PATH}/fullchain.pem;', block_start)
-        block_start = re.sub(r'ssl_certificate_key\s+[^;]+;', f'ssl_certificate_key ${CERT_PATH}/privkey.pem;', block_start)
+        block_start = re.sub(r'ssl_certificate\s+[^;]+;', f'ssl_certificate {cert_path}/fullchain.pem;', block_start)
+        block_start = re.sub(r'ssl_certificate_key\s+[^;]+;', f'ssl_certificate_key {cert_path}/privkey.pem;', block_start)
         
         # proxy_pass kontrolü
         if 'proxy_pass' not in block_content:
@@ -118,8 +120,8 @@ else:
     content = re.sub(pattern, update_ssl_block, content, flags=re.DOTALL)
 
 # Ana server block'undan dugunkarem.com.tr'yi kaldır (çakışmayı önlemek için)
-content = re.sub(r'(server_name[^;]*)\b' + re.escape(DOMAIN) + r'\b([^;]*;)', r'\1\2', content)
-content = re.sub(r'(server_name[^;]*)\bwww\.' + re.escape(DOMAIN) + r'\b([^;]*;)', r'\1\2', content)
+content = re.sub(r'(server_name[^;]*)\b' + re.escape(domain) + r'\b([^;]*;)', r'\1\2', content)
+content = re.sub(r'(server_name[^;]*)\bwww\.' + re.escape(domain) + r'\b([^;]*;)', r'\1\2', content)
 content = re.sub(r'  +', ' ', content)  # Çoklu boşlukları temizle
 
 # Çoklu boş satırları temizle
