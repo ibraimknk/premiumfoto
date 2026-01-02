@@ -52,15 +52,26 @@ else
     exit 1
 fi
 
-# Son kontrol
-if [ ! -f "${CERT_PATH}/fullchain.pem" ]; then
+# Son kontrol (symlink'ler için -L kullan)
+if [ ! -L "${CERT_PATH}/fullchain.pem" ] && [ ! -f "${CERT_PATH}/fullchain.pem" ]; then
     echo -e "${RED}❌ Sertifika dosyası bulunamadı: ${CERT_PATH}/fullchain.pem${NC}"
     echo -e "${YELLOW}💡 Sertifika oluşturulmalı:${NC}"
     echo "   sudo certbot certonly --nginx -d dugunkarem.com -d dugunkarem.com.tr"
     exit 1
 fi
 
-echo -e "${GREEN}✅ Sertifika mevcut: ${CERT_PATH}/fullchain.pem${NC}"
+# Symlink'in geçerli olduğunu kontrol et
+if [ -L "${CERT_PATH}/fullchain.pem" ]; then
+    TARGET=$(sudo readlink -f "${CERT_PATH}/fullchain.pem")
+    if [ -f "$TARGET" ]; then
+        echo -e "${GREEN}✅ Sertifika mevcut (symlink): ${CERT_PATH}/fullchain.pem -> $TARGET${NC}"
+    else
+        echo -e "${RED}❌ Symlink geçersiz: ${CERT_PATH}/fullchain.pem -> $TARGET${NC}"
+        exit 1
+    fi
+else
+    echo -e "${GREEN}✅ Sertifika mevcut: ${CERT_PATH}/fullchain.pem${NC}"
+fi
 
 # 2. certbot install deneyelim
 echo -e "${YELLOW}📝 Certbot install deneniyor...${NC}"
