@@ -30,42 +30,58 @@ import sys
 
 config_file = "${NGINX_CONFIG}"
 
+def find_server_blocks(content):
+    """Server block'larını bul ve parse et"""
+    blocks = []
+    depth = 0
+    start = -1
+    
+    for i, char in enumerate(content):
+        if content[i:i+6] == 'server':
+            # 'server' kelimesinden sonra '{' arayalım
+            j = i + 6
+            while j < len(content) and content[j] in ' \t\n{':
+                if content[j] == '{':
+                    start = i
+                    depth = 1
+                    break
+                j += 1
+        elif start != -1:
+            if char == '{':
+                depth += 1
+            elif char == '}':
+                depth -= 1
+                if depth == 0:
+                    blocks.append((start, i + 1))
+                    start = -1
+    
+    return blocks
+
 try:
     with open(config_file, 'r') as f:
         content = f.read()
     
-    # dugunkarem.com ve dugunkarem.com.tr için tüm server block'ları bul
+    # dugunkarem domain'leri için tüm server block'larını bul ve kaldır
     domains = ["dugunkarem.com", "dugunkarem.com.tr"]
     
-    # Her domain için
-    for domain in domains:
-        # Domain için tüm server block'ları bul
-        pattern = rf'(server\s*{{[^}}]*server_name[^}}]*{re.escape(domain)}[^}}]*}})'
-        matches = re.finditer(pattern, content, re.DOTALL | re.IGNORECASE)
-        
-        blocks_to_remove = []
-        for match in matches:
-            block = match.group(1)
-            # Eğer bu block sadece yönlendirme yapıyorsa ve HTTPS'te ise, kaldır
-            if 'return 301' in block or 'return 302' in block:
-                # HTTPS'ten HTTPS'e yönlendirme varsa, kaldır
-                if 'listen 443' in block or 'ssl' in block:
-                    blocks_to_remove.append(block)
-                    print(f"✅ {domain} için HTTPS'ten HTTPS'e yönlendirme kaldırılıyor")
-        
-        # Block'ları kaldır
-        for block in blocks_to_remove:
-            content = content.replace(block, '')
+    # Server block'larını bul
+    blocks = find_server_blocks(content)
+    
+    # dugunkarem block'larını bul ve kaldır
+    blocks_to_remove = []
+    for start, end in blocks:
+        block_content = content[start:end]
+        # dugunkarem domain'i içeriyor mu?
+        if any(re.search(rf'\b{re.escape(domain)}\b', block_content, re.IGNORECASE) for domain in domains):
+            blocks_to_remove.append((start, end))
+            print(f"✅ dugunkarem server block bulundu ve kaldırılıyor")
+    
+    # Block'ları sondan başa doğru kaldır (indeks kaymasını önlemek için)
+    for start, end in reversed(blocks_to_remove):
+        content = content[:start] + content[end:]
     
     # Tekrarlanan boş satırları temizle
     content = re.sub(r'\n{3,}', '\n\n', content)
-    
-    # dugunkarem domain'leri için doğru server block'ları oluştur
-    # Önce mevcut dugunkarem block'larını temizle
-    for domain in domains:
-        # Tüm dugunkarem block'larını bul ve kaldır
-        pattern = rf'(server\s*{{[^}}]*server_name[^}}]*{re.escape(domain)}[^}}]*}})'
-        content = re.sub(pattern, '', content, flags=re.DOTALL | re.IGNORECASE)
     
     # Temiz dugunkarem block'ları ekle
     cert_path = "/etc/letsencrypt/live/dugunkarem.com"
