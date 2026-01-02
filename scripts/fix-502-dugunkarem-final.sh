@@ -14,15 +14,15 @@ TARGET_PORT=3040
 
 echo -e "${YELLOW}🔧 dugunkarem.com ve dugunkarem.com.tr 502 hatası kesin çözülüyor...${NC}"
 
-# 1. Port 3040 kontrolü
+# 1. Port 3040 kontrolü (curl ile)
 echo -e "${YELLOW}🔍 Port ${TARGET_PORT} kontrol ediliyor...${NC}"
-if ! sudo lsof -i:${TARGET_PORT} > /dev/null 2>&1; then
-    echo -e "${RED}❌ Port ${TARGET_PORT} dinlenmiyor!${NC}"
+if ! curl -s -o /dev/null -w "%{http_code}" --max-time 5 http://localhost:${TARGET_PORT} | grep -q "200\|301\|302"; then
+    echo -e "${RED}❌ Port ${TARGET_PORT} çalışmıyor!${NC}"
     echo -e "${YELLOW}💡 foto-ugur-app'i başlatın:${NC}"
     echo "   cd ~/premiumfoto && pm2 restart foto-ugur-app"
     exit 1
 fi
-echo -e "${GREEN}✅ Port ${TARGET_PORT} dinleniyor${NC}"
+echo -e "${GREEN}✅ Port ${TARGET_PORT} çalışıyor${NC}"
 
 # 2. Nginx config'i kontrol et ve düzelt
 if [ ! -f "$NGINX_CONFIG" ]; then
