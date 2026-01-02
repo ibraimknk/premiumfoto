@@ -90,13 +90,14 @@ try:
     # Temiz dugunkarem block'ları ekle
     cert_path = "/etc/letsencrypt/live/dugunkarem.com"
     
+    # $ karakterlerini escape etmek için raw string kullan
     dugunkarem_blocks = f'''
 # dugunkarem.com ve dugunkarem.com.tr - HTTP'den HTTPS'e yönlendirme
 server {{
     listen 80;
     listen [::]:80;
     server_name dugunkarem.com dugunkarem.com.tr;
-    return 301 https://$host$request_uri;
+    return 301 https://${{'$'}}host${{'$'}}request_uri;
 }}
 
 # dugunkarem.com - HTTPS
@@ -115,13 +116,13 @@ server {{
     location / {{
         proxy_pass http://127.0.0.1:3040;
         proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Upgrade ${{'$'}}http_upgrade;
         proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_cache_bypass $http_upgrade;
+        proxy_set_header Host ${{'$'}}host;
+        proxy_set_header X-Real-IP ${{'$'}}remote_addr;
+        proxy_set_header X-Forwarded-For ${{'$'}}proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto ${{'$'}}scheme;
+        proxy_cache_bypass ${{'$'}}http_upgrade;
         
         proxy_connect_timeout 60s;
         proxy_send_timeout 60s;
@@ -145,20 +146,20 @@ server {{
     location / {{
         proxy_pass http://127.0.0.1:3040;
         proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Upgrade ${{'$'}}http_upgrade;
         proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_cache_bypass $http_upgrade;
+        proxy_set_header Host ${{'$'}}host;
+        proxy_set_header X-Real-IP ${{'$'}}remote_addr;
+        proxy_set_header X-Forwarded-For ${{'$'}}proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto ${{'$'}}scheme;
+        proxy_cache_bypass ${{'$'}}http_upgrade;
         
         proxy_connect_timeout 60s;
         proxy_send_timeout 60s;
         proxy_read_timeout 60s;
     }}
 }}
-'''
+'''.replace("${'$'}", "$")
     
     # Config'in sonuna ekle
     content = content.rstrip() + "\n" + dugunkarem_blocks
