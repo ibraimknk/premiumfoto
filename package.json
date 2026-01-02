@@ -28,7 +28,8 @@
     "fix-blog-images": "node scripts/fix-blog-images.js",
     "fix-git-conflict": "bash scripts/fix-git-conflict.sh",
     "fix-dugunkarem-nginx": "bash scripts/fix-dugunkarem-nginx.sh",
-    "regenerate-blogs": "tsx scripts/regenerate-blogs-from-google.ts"
+    "regenerate-blogs": "tsx scripts/regenerate-blogs-from-google.ts",
+    "regenerate-blogs-from-urls": "tsx scripts/regenerate-blogs-from-url-list.ts"
   },
   "dependencies": {
     "next": "^14.2.0",
