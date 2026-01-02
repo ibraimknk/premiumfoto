@@ -36,12 +36,22 @@ if sudo test -d "${CERT_PATH}"; then
         if sudo test -d "$ARCHIVE_DIR"; then
             echo -e "${GREEN}✅ Archive dizini mevcut: $ARCHIVE_DIR${NC}"
             LATEST_CERT=$(sudo ls -t "$ARCHIVE_DIR"/fullchain*.pem 2>/dev/null | head -1 || echo "")
+            LATEST_KEY=$(sudo ls -t "$ARCHIVE_DIR"/privkey*.pem 2>/dev/null | head -1 || echo "")
+            LATEST_CHAIN=$(sudo ls -t "$ARCHIVE_DIR"/chain*.pem 2>/dev/null | head -1 || echo "")
+            
             if [ -n "$LATEST_CERT" ] && sudo test -f "$LATEST_CERT"; then
                 echo -e "${GREEN}✅ Sertifika bulundu: $LATEST_CERT${NC}"
-                # Symlink oluştur
-                sudo ln -sf "$LATEST_CERT" "${CERT_PATH}/fullchain.pem" 2>/dev/null || true
-                sudo ln -sf "$(sudo ls -t "$ARCHIVE_DIR"/privkey*.pem 2>/dev/null | head -1)" "${CERT_PATH}/privkey.pem" 2>/dev/null || true
-                sudo ln -sf "$(sudo ls -t "$ARCHIVE_DIR"/chain*.pem 2>/dev/null | head -1)" "${CERT_PATH}/chain.pem" 2>/dev/null || true
+                # Geçersiz symlink'leri kaldır
+                sudo rm -f "${CERT_PATH}/fullchain.pem" "${CERT_PATH}/privkey.pem" "${CERT_PATH}/chain.pem" 2>/dev/null || true
+                # Doğru symlink'leri oluştur
+                sudo ln -sf "$LATEST_CERT" "${CERT_PATH}/fullchain.pem"
+                if [ -n "$LATEST_KEY" ] && sudo test -f "$LATEST_KEY"; then
+                    sudo ln -sf "$LATEST_KEY" "${CERT_PATH}/privkey.pem"
+                fi
+                if [ -n "$LATEST_CHAIN" ] && sudo test -f "$LATEST_CHAIN"; then
+                    sudo ln -sf "$LATEST_CHAIN" "${CERT_PATH}/chain.pem"
+                fi
+                echo -e "${GREEN}✅ Symlink'ler düzeltildi${NC}"
             fi
         fi
     fi
@@ -60,17 +70,35 @@ if ! sudo test -L "${CERT_PATH}/fullchain.pem" && ! sudo test -f "${CERT_PATH}/f
     exit 1
 fi
 
-# Symlink'in geçerli olduğunu kontrol et
+# Symlink'in geçerli olduğunu kontrol et ve gerekirse düzelt
 if sudo test -L "${CERT_PATH}/fullchain.pem"; then
     TARGET=$(sudo readlink -f "${CERT_PATH}/fullchain.pem" 2>/dev/null || echo "")
     if [ -n "$TARGET" ] && sudo test -f "$TARGET"; then
         echo -e "${GREEN}✅ Sertifika mevcut (symlink): ${CERT_PATH}/fullchain.pem -> $TARGET${NC}"
     else
-        echo -e "${RED}❌ Symlink geçersiz: ${CERT_PATH}/fullchain.pem -> $TARGET${NC}"
-        exit 1
+        echo -e "${YELLOW}⚠️  Symlink geçersiz, düzeltiliyor...${NC}"
+        # Archive dizininden en son sertifikayı bul ve symlink oluştur
+        ARCHIVE_DIR="/etc/letsencrypt/archive/${CERT_NAME}"
+        if sudo test -d "$ARCHIVE_DIR"; then
+            LATEST_CERT=$(sudo ls -t "$ARCHIVE_DIR"/fullchain*.pem 2>/dev/null | head -1 || echo "")
+            if [ -n "$LATEST_CERT" ] && sudo test -f "$LATEST_CERT"; then
+                sudo rm -f "${CERT_PATH}/fullchain.pem"
+                sudo ln -sf "$LATEST_CERT" "${CERT_PATH}/fullchain.pem"
+                echo -e "${GREEN}✅ Symlink düzeltildi${NC}"
+            else
+                echo -e "${RED}❌ Sertifika dosyası bulunamadı!${NC}"
+                exit 1
+            fi
+        else
+            echo -e "${RED}❌ Archive dizini bulunamadı!${NC}"
+            exit 1
+        fi
     fi
-else
+elif sudo test -f "${CERT_PATH}/fullchain.pem"; then
     echo -e "${GREEN}✅ Sertifika mevcut: ${CERT_PATH}/fullchain.pem${NC}"
+else
+    echo -e "${RED}❌ Sertifika dosyası bulunamadı!${NC}"
+    exit 1
 fi
 
 # 2. certbot install deneyelim
