@@ -17,12 +17,50 @@ CERT_PATH="/etc/letsencrypt/live/${CERT_NAME}"
 echo -e "${YELLOW}🔧 ${CERT_NAME} sertifikası manuel olarak yükleniyor...${NC}"
 
 # 1. Sertifika var mı kontrol et
-if [ ! -f "${CERT_PATH}/fullchain.pem" ]; then
-    echo -e "${RED}❌ Sertifika bulunamadı: ${CERT_PATH}/fullchain.pem${NC}"
+echo -e "${YELLOW}🔍 Sertifika aranıyor...${NC}"
+
+# Önce dugunkarem.com dizinini kontrol et
+if [ -d "${CERT_PATH}" ]; then
+    echo -e "${GREEN}✅ Sertifika dizini mevcut: ${CERT_PATH}${NC}"
+    
+    # Dosyaları listele
+    echo -e "${YELLOW}📋 Dizin içeriği:${NC}"
+    sudo ls -la "${CERT_PATH}" || true
+    
+    # fullchain.pem var mı?
+    if [ ! -f "${CERT_PATH}/fullchain.pem" ]; then
+        echo -e "${YELLOW}⚠️  fullchain.pem bulunamadı, archive dizininden kontrol ediliyor...${NC}"
+        
+        # Archive dizininden kontrol et
+        ARCHIVE_DIR="/etc/letsencrypt/archive/${CERT_NAME}"
+        if [ -d "$ARCHIVE_DIR" ]; then
+            echo -e "${GREEN}✅ Archive dizini mevcut: $ARCHIVE_DIR${NC}"
+            LATEST_CERT=$(sudo ls -t "$ARCHIVE_DIR"/fullchain*.pem 2>/dev/null | head -1)
+            if [ -n "$LATEST_CERT" ]; then
+                echo -e "${GREEN}✅ Sertifika bulundu: $LATEST_CERT${NC}"
+                # Symlink oluştur
+                sudo ln -sf "$LATEST_CERT" "${CERT_PATH}/fullchain.pem" 2>/dev/null || true
+                sudo ln -sf "$(sudo ls -t "$ARCHIVE_DIR"/privkey*.pem 2>/dev/null | head -1)" "${CERT_PATH}/privkey.pem" 2>/dev/null || true
+                sudo ln -sf "$(sudo ls -t "$ARCHIVE_DIR"/chain*.pem 2>/dev/null | head -1)" "${CERT_PATH}/chain.pem" 2>/dev/null || true
+            fi
+        fi
+    fi
+else
+    echo -e "${RED}❌ Sertifika dizini bulunamadı: ${CERT_PATH}${NC}"
+    echo -e "${YELLOW}💡 Mevcut sertifikalar:${NC}"
+    sudo ls -la /etc/letsencrypt/live/ || true
     exit 1
 fi
 
-echo -e "${GREEN}✅ Sertifika mevcut: ${CERT_PATH}${NC}"
+# Son kontrol
+if [ ! -f "${CERT_PATH}/fullchain.pem" ]; then
+    echo -e "${RED}❌ Sertifika dosyası bulunamadı: ${CERT_PATH}/fullchain.pem${NC}"
+    echo -e "${YELLOW}💡 Sertifika oluşturulmalı:${NC}"
+    echo "   sudo certbot certonly --nginx -d dugunkarem.com -d dugunkarem.com.tr"
+    exit 1
+fi
+
+echo -e "${GREEN}✅ Sertifika mevcut: ${CERT_PATH}/fullchain.pem${NC}"
 
 # 2. certbot install deneyelim
 echo -e "${YELLOW}📝 Certbot install deneniyor...${NC}"
