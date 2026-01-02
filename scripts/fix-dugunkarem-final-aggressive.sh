@@ -103,13 +103,14 @@ content = re.sub(
 content = re.sub(r'www\.www\.', 'www.', content)
 
 # Yeni block'ları oluştur (en başa eklenecek)
+# $ karakterlerini escape etmek için $$ kullan
 new_blocks = f'''
 # dugunkarem.com HTTP -> HTTPS redirect
 server {{
     listen 80;
     listen [::]:80;
     server_name dugunkarem.com www.dugunkarem.com;
-    return 301 https://dugunkarem.com$request_uri;
+    return 301 https://dugunkarem.com$$request_uri;
 }}
 
 # dugunkarem.com.tr HTTP -> HTTPS redirect
@@ -117,7 +118,7 @@ server {{
     listen 80;
     listen [::]:80;
     server_name dugunkarem.com.tr www.dugunkarem.com.tr;
-    return 301 https://dugunkarem.com.tr$request_uri;
+    return 301 https://dugunkarem.com.tr$$request_uri;
 }}
 
 # dugunkarem.com SSL yapılandırması (Port {target_port})
@@ -143,12 +144,12 @@ server {{
     location / {{
         proxy_pass http://127.0.0.1:{target_port};
         proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Upgrade $$http_upgrade;
         proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Host $$host;
+        proxy_set_header X-Real-IP $$remote_addr;
+        proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $$scheme;
     }}
 }}
 
@@ -175,12 +176,12 @@ server {{
     location / {{
         proxy_pass http://127.0.0.1:{target_port};
         proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Upgrade $$http_upgrade;
         proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Host $$host;
+        proxy_set_header X-Real-IP $$remote_addr;
+        proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $$scheme;
     }}
 }}
 '''
