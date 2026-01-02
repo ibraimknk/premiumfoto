@@ -28,9 +28,9 @@ cd "$HOME_DIR/premiumfoto"
 
 # 1. Git conflict çöz (agresif)
 echo -e "${YELLOW}1️⃣ Git conflict çözülüyor...${NC}"
-git stash
+git stash || true
+git fetch origin main
 git reset --hard origin/main
-git pull origin main
 echo -e "${GREEN}✅ Git conflict çözüldü${NC}"
 echo ""
 
