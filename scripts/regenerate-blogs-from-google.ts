@@ -321,11 +321,16 @@ async function saveBlogToDatabase(blogData: any, originalUrl: string): Promise<a
  * Ana fonksiyon
  */
 async function main() {
-  console.log("🚀 Google'dan indexlenen blog sayfaları bulunuyor...\n")
+  console.log("🚀 Google'da indexlenen blog sayfaları bulunuyor...\n")
 
   try {
-    // 1. Google'dan blog URL'lerini bul
-    const urls = await findBlogUrlsFromGoogle("site:fotougur.com.tr/blog")
+    // 1. Önce CSV dosyasını kontrol et (google.py script'inden gelen)
+    let urls = await findBlogUrlsFromCSV("blog_urls_only.csv")
+    
+    // 2. CSV yoksa veya boşsa, Google'dan veya sitemap'ten bul
+    if (urls.length === 0) {
+      console.log("📋 CSV dosyası bulunamadı veya boş, alternatif yöntemler deneniyor...\n")
+      urls = await findBlogUrlsFromGoogle("site:fotougur.com.tr/blog")
     
     if (urls.length === 0) {
       console.log("❌ Hiç blog URL'i bulunamadı!")
