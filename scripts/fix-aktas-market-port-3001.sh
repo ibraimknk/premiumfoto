@@ -99,9 +99,9 @@ if [ -f "package.json" ]; then
     fi
 fi
 
-# 7. PM2 ecosystem config oluştur
+# 7. PM2 ecosystem config oluştur (.cjs uzantısı kullan - ES module için)
 echo -e "${YELLOW}📝 PM2 ecosystem config oluşturuluyor...${NC}"
-cat > "$AKTAS_DIR/ecosystem-aktas-market.config.js" << PM2EOF
+cat > "$AKTAS_DIR/ecosystem-aktas-market.config.cjs" << PM2EOF
 module.exports = {
   apps: [{
     name: '${PM2_APP_NAME_AKTAS}',
@@ -127,7 +127,7 @@ PM2EOF
 
 # 8. PM2 ile başlat
 echo -e "${YELLOW}🚀 ${PM2_APP_NAME_AKTAS} port ${APP_PORT}'de başlatılıyor...${NC}"
-pm2 start "$AKTAS_DIR/ecosystem-aktas-market.config.js"
+pm2 start "$AKTAS_DIR/ecosystem-aktas-market.config.cjs"
 pm2 save
 
 # 9. PM2 durum kontrolü
