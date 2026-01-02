@@ -10,6 +10,10 @@ import { AnimatedSection } from "@/components/features/AnimatedSection"
 import { shouldUnoptimizeImage } from "@/lib/image-utils"
 import { getBlogImage } from "@/lib/blog-image-helper"
 
+// Dinamik rendering için - yeni blog'lar için 404 sorununu çözer
+export const dynamic = 'force-dynamic'
+export const revalidate = 60 // 60 saniyede bir revalidate et
+
 export async function generateStaticParams() {
   const posts = await prisma.blogPost.findMany({
     where: { isPublished: true },
