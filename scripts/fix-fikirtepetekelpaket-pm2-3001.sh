@@ -49,12 +49,9 @@ else
     fi
 fi
 
-# 4. package.json'da start script'ini kontrol et
-if grep -q '"start": "next start -p' package.json; then
-    echo -e "${YELLOW}📝 package.json start script'i güncelleniyor...${NC}"
-    sed -i "s/\"start\": \"next start -p [0-9]*/\"start\": \"next start -p ${APP_PORT}/" package.json
-    echo -e "${GREEN}✅ package.json güncellendi${NC}"
-fi
+# 4. package.json'ı DEĞİŞTİRME - sadece PM2 ecosystem config'inde PORT kullan
+# package.json'ı değiştirmiyoruz çünkü bu premiumfoto için, port 3040'da kalmalı
+echo -e "${YELLOW}ℹ️  package.json değiştirilmiyor (premiumfoto port 3040'da kalmalı)${NC}"
 
 # 5. PM2 ecosystem config oluştur
 echo -e "${YELLOW}📝 PM2 ecosystem config oluşturuluyor...${NC}"
