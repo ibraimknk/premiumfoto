@@ -40,15 +40,17 @@ NGINX_CONFIGS=(
 
 for config in "${NGINX_CONFIGS[@]}"; do
     if [ -f "$config" ]; then
-        # Yedek al
-        cp "$config" "${config}.backup.$(date +%Y%m%d_%H%M%S)"
+        # Yedek al (sudo ile)
+        sudo cp "$config" "${config}.backup.$(date +%Y%m%d_%H%M%S)"
         
         # fikirtepetekelpaket.com içeren server block'ları yorum satırına al
-        # Python ile daha güvenli düzeltme
-        python3 << PYEOF
+        # Python ile daha güvenli düzeltme (sudo ile)
+        sudo python3 << PYEOF
 import re
 
-with open("$config", 'r', encoding='utf-8') as f:
+config_file = "$config"
+
+with open(config_file, 'r', encoding='utf-8') as f:
     content = f.read()
 
 # fikirtepetekelpaket.com içeren server block'ları bul ve yorum satırına al
@@ -114,7 +116,7 @@ if in_server_block and in_fikirtepe_block:
 
 content = '\n'.join(result_lines)
 
-with open("$config", 'w', encoding='utf-8') as f:
+with open(config_file, 'w', encoding='utf-8') as f:
     f.write(content)
 
 print("Config güncellendi")
