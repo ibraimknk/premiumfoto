@@ -331,6 +331,7 @@ async function main() {
     if (urls.length === 0) {
       console.log("📋 CSV dosyası bulunamadı veya boş, alternatif yöntemler deneniyor...\n")
       urls = await findBlogUrlsFromGoogle("site:fotougur.com.tr/blog")
+    }
     
     if (urls.length === 0) {
       console.log("❌ Hiç blog URL'i bulunamadı!")
