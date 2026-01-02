@@ -16,7 +16,15 @@ TARGET_PORT=3040
 echo -e "${BLUE}🔧 dugunkarem.com çözüm...${NC}"
 echo ""
 
-cd ~/premiumfoto
+# Home dizinini bul
+if [ "$EUID" -eq 0 ]; then
+    # Root ise, ibrahim kullanıcısının home dizinini kullan
+    HOME_DIR="/home/ibrahim"
+else
+    HOME_DIR="$HOME"
+fi
+
+cd "$HOME_DIR/premiumfoto"
 
 # 1. Git conflict çöz (agresif)
 echo -e "${YELLOW}1️⃣ Git conflict çözülüyor...${NC}"
