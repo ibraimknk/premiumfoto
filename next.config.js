@@ -26,5 +26,5 @@ const nextConfig = {
   // Not: Bu Next.js 14'te geçersiz, serverActions kullanılıyor
 }
 
-module.exports = nextConfig
+export default nextConfig
 
