@@ -4,6 +4,10 @@ import { generatePageMetadata, generateFAQSchema } from "@/lib/seo"
 import Container from "@/components/layout/Container"
 import { AnimatedSection } from "@/components/features/AnimatedSection"
 
+// Force dynamic rendering to always fetch fresh data
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export async function generateMetadata() {
   return await generatePageMetadata(
     "Sıkça Sorulan Sorular - Foto Uğur",

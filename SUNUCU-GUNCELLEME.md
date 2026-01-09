@@ -1,73 +1,86 @@
-# Sunucuda Güncelleme Komutları
+# 🔄 Sunucu Güncelleme
 
-## 🔄 GitHub'dan Güncelleme Çekme
+## 📋 Durum
 
-### 1. Proje Dizinine Git
-```bash
-cd ~/premiumfoto
-```
+- ✅ `package.json` yerelde güncellendi (port 3040)
+- ✅ `deploy.sh` yerelde güncellendi (port 3040)
+- ❌ Değişiklikler henüz sunucuya gitmedi
 
-### 2. Güncellemeleri Çek
-```bash
-git pull origin main
-```
+## 🚀 Sunucuya Güncelleme
 
-### 3. Bağımlılıkları Güncelle (Gerekirse)
-```bash
-npm install
-```
-
-### 4. Build Yap
-```bash
-npm run build
-```
-
-### 5. PM2 ile Yeniden Başlat
-```bash
-pm2 restart foto-ugur-app
-```
-
-## 📋 Tek Komutla Tüm İşlemler
+### 1. Yerelde GitHub'a Push
 
 ```bash
-cd ~/premiumfoto && git pull origin main && npm install && npm run build && pm2 restart foto-ugur-app
-```
-
-## 🔍 Durum Kontrolü
-
-```bash
-# Git durumu kontrol et
+# Değişiklikleri kontrol et
 git status
 
-# PM2 durumu kontrol et
+# Değişiklikleri ekle
+git add package.json deploy.sh
+
+# Commit
+git commit -m "Port 3040'a geri döndürüldü"
+
+# GitHub'a push
+git push origin main
+```
+
+### 2. Sunucuda Pull
+
+```bash
+cd ~/premiumfoto
+
+# Son değişiklikleri çek
+git pull origin main
+
+# package.json kontrolü
+cat package.json | grep '"start"'
+# Çıktı: "start": "next start -p 3040", olmalı
+```
+
+### 3. PM2'yi Yeniden Başlat
+
+```bash
+cd ~/premiumfoto
+
+# PM2'yi durdur
+pm2 stop foto-ugur-app
+
+# PM2'yi yeniden başlat
+pm2 restart foto-ugur-app
+
+# Durumu kontrol et
 pm2 status
 
-# PM2 logları görüntüle
-pm2 logs foto-ugur-app --lines 50
+# Logları kontrol et
+pm2 logs foto-ugur-app --lines 20
 ```
 
-## ⚠️ Sorun Giderme
+## 🔥 Tek Komutla Tüm İşlemler (Sunucuda)
 
-### Eğer çakışma varsa:
 ```bash
-# Değişiklikleri kaydetmeden çek
-git stash
-git pull origin main
-git stash pop
+cd ~/premiumfoto && \
+git pull origin main && \
+cat package.json | grep '"start"' && \
+pm2 restart foto-ugur-app && \
+pm2 status
 ```
 
-### Eğer build hatası varsa:
+## ✅ Doğrulama
+
 ```bash
-# Node modules'ü temizle ve yeniden kur
-rm -rf node_modules package-lock.json
-npm install
-npm run build
-```
+# package.json kontrolü
+cat package.json | grep '"start"'
+# Çıktı: "start": "next start -p 3040", olmalı
 
-### Eğer PM2 çalışmıyorsa:
-```bash
-# PM2'yi başlat
-pm2 start npm --name "foto-ugur-app" -- start
-pm2 save
-```
+# Port 3040 kontrolü
+sudo lsof -i:3040
+# node process görünmeli
 
+# PM2 durumu
+pm2 status
+# foto-ugur-app "online" olmalı
+
+# Uygulama erişilebilir mi?
+curl -I http://localhost:3040
+# HTTP 200 dönmeli
+```

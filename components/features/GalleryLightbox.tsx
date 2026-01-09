@@ -160,12 +160,8 @@ export function GalleryLightbox({
           />
         )}
 
-        {/* Title */}
-        {currentItem.title && (
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/80 text-white px-6 py-3 rounded-lg text-center max-w-[90%]">
-            {currentItem.title}
-          </div>
-        )}
+        {/* Title - SEO için arka planda alt tag kullanılıyor, görsel olarak gösterme */}
+        {/* Başlık gösterilmiyor - kullanıcı isteği */}
 
         {/* Counter */}
         <div className="absolute top-4 left-4 bg-black/80 text-white px-4 py-2 rounded-lg text-sm font-medium">

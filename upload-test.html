@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fotoğraf Upload Test - fotougur.com.tr</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f8f9ff;
+        }
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #f0f2ff;
+        }
+        .upload-area.dragover {
+            border-color: #764ba2;
+            background: #e8ebff;
+            transform: scale(1.02);
+        }
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        .upload-text {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .upload-hint {
+            color: #999;
+            font-size: 14px;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .api-key-input {
+            margin-top: 20px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            width: 100%;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        .api-key-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .api-key-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #666;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            transition: transform 0.2s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .preview {
+            margin-top: 30px;
+            display: none;
+        }
+        .preview img {
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+        }
+        .result.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .result.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .result-url {
+            margin-top: 10px;
+            word-break: break-all;
+            font-size: 12px;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .result-url a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        .result-url a:hover {
+            text-decoration: underline;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📸 Fotoğraf Yükle</h1>
+        <p class="subtitle">fotougur.com.tr - Image Upload API</p>
+        
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📁</div>
+            <div class="upload-text">Dosyayı buraya sürükleyin veya tıklayın</div>
+            <div class="upload-hint">JPEG, PNG, GIF, WebP, SVG (Max: 20MB)</div>
+        </div>
+        
+        <input type="file" id="fileInput" accept="image/*">
+        
+        <label class="api-key-label">API Key (Opsiyonel - .env dosyasında UPLOAD_API_KEY tanımlıysa gerekli)</label>
+        <input type="text" class="api-key-input" id="apiKey" placeholder="API Key girin (opsiyonel)">
+        
+        <button class="btn" id="uploadBtn" disabled>Yükle</button>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 10px; color: #666;">Yükleniyor...</p>
+        </div>
+        
+        <div class="preview" id="preview">
+            <h3 style="margin-bottom: 15px; color: #333;">Önizleme:</h3>
+            <img id="previewImg" src="" alt="Preview">
+        </div>
+        
+        <div class="result" id="result">
+            <div id="resultMessage"></div>
+            <div class="result-url" id="resultUrl"></div>
+        </div>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const apiKeyInput = document.getElementById('apiKey');
+        const preview = document.getElementById('preview');
+        const previewImg = document.getElementById('previewImg');
+        const result = document.getElementById('result');
+        const resultMessage = document.getElementById('resultMessage');
+        const resultUrl = document.getElementById('resultUrl');
+        const loading = document.getElementById('loading');
+
+        let selectedFile = null;
+
+        // Upload area click
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // Drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileSelect(files[0]);
+            }
+        });
+
+        // File input change
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelect(e.target.files[0]);
+            }
+        });
+
+        function handleFileSelect(file) {
+            // Dosya tipi kontrolü
+            if (!file.type.startsWith('image/')) {
+                showResult('error', 'Lütfen bir resim dosyası seçin');
+                return;
+            }
+
+            // Dosya boyutu kontrolü (20MB)
+            if (file.size > 20 * 1024 * 1024) {
+                showResult('error', 'Dosya çok büyük. Maksimum 20MB');
+                return;
+            }
+
+            selectedFile = file;
+            uploadBtn.disabled = false;
+
+            // Önizleme göster
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImg.src = e.target.result;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+
+            // Upload area text güncelle
+            uploadArea.querySelector('.upload-text').textContent = `Seçilen: ${file.name}`;
+            uploadArea.querySelector('.upload-hint').textContent = `Boyut: ${(file.size / 1024 / 1024).toFixed(2)}MB`;
+        }
+
+        // Upload button
+        uploadBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+
+            loading.style.display = 'block';
+            result.style.display = 'none';
+            uploadBtn.disabled = true;
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            const headers = {};
+            const apiKey = apiKeyInput.value.trim();
+            if (apiKey) {
+                headers['x-api-key'] = apiKey;
+            }
+
+            try {
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    headers: headers,
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    showResult('success', '✅ Fotoğraf başarıyla yüklendi!', data.url);
+                } else {
+                    showResult('error', `❌ Hata: ${data.error || 'Bilinmeyen hata'}`);
+                }
+            } catch (error) {
+                showResult('error', `❌ Hata: ${error.message}`);
+            } finally {
+                loading.style.display = 'none';
+                uploadBtn.disabled = false;
+            }
+        });
+
+        function showResult(type, message, url = null) {
+            result.className = `result ${type}`;
+            resultMessage.textContent = message;
+            result.style.display = 'block';
+
+            if (url) {
+                resultUrl.innerHTML = `
+                    <strong>URL:</strong><br>
+                    <a href="${url}" target="_blank">${url}</a>
+                    <button onclick="navigator.clipboard.writeText('${url}')" 
+                            style="margin-top: 10px; padding: 5px 10px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        📋 Kopyala
+                    </button>
+                `;
+            } else {
+                resultUrl.innerHTML = '';
+            }
+        }
+    </script>
+</body>
+</html>
+
