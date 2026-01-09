@@ -78,61 +78,60 @@ export default function FotolarPage() {
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800">
-          <div className="bg-white rounded-lg shadow-2xl p-8 w-full max-w-md">
-            <h1 className="text-3xl font-bold text-center mb-6 text-gray-800">
-              🔒 Şifreli Galeri
-            </h1>
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                  Şifre
-                </label>
-                <input
-                  type="password"
-                  id="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                  placeholder="Şifrenizi girin"
-                  autoFocus
-                />
+        <div className="bg-white rounded-lg shadow-2xl p-8 w-full max-w-md">
+          <h1 className="text-3xl font-bold text-center mb-6 text-gray-800">
+            🔒 Şifreli Galeri
+          </h1>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                Şifre
+              </label>
+              <input
+                type="password"
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                placeholder="Şifrenizi girin"
+                autoFocus
+              />
+            </div>
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                {error}
               </div>
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                  {error}
-                </div>
-              )}
-              <button
-                type="submit"
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200"
-              >
-                Giriş Yap
-              </button>
-            </form>
-          </div>
+            )}
+            <button
+              type="submit"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200"
+            >
+              Giriş Yap
+            </button>
+          </form>
         </div>
-      </>
+      </div>
     )
   }
 
   // Galeri ekranı
   return (
     <div className="min-h-screen bg-gray-100">
-        {/* Header */}
-        <header className="bg-white shadow-sm sticky top-0 z-10">
-          <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-gray-800">📸 Fotoğraf Galerisi</h1>
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition duration-200"
-            >
-              Çıkış
-            </button>
-          </div>
-        </header>
+      {/* Header */}
+      <header className="bg-white shadow-sm sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-gray-800">📸 Fotoğraf Galerisi</h1>
+          <button
+            onClick={handleLogout}
+            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition duration-200"
+          >
+            Çıkış
+          </button>
+        </div>
+      </header>
 
-        {/* Galeri Grid */}
-        <main className="max-w-7xl mx-auto px-4 py-8">
+      {/* Galeri Grid */}
+      <main className="max-w-7xl mx-auto px-4 py-8">
           {loading ? (
             <div className="text-center py-12">
               <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -172,35 +171,35 @@ export default function FotolarPage() {
               </div>
             </>
           )}
-        </main>
+      </main>
 
-        {/* Modal - Büyük Fotoğraf */}
-        {selectedImage && (
-          <div
-            className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
-            onClick={() => setSelectedImage(null)}
-          >
-            <div className="relative max-w-7xl max-h-full">
-              <button
-                onClick={() => setSelectedImage(null)}
-                className="absolute top-4 right-4 text-white hover:text-gray-300 text-4xl font-bold z-10 bg-black bg-opacity-50 rounded-full w-12 h-12 flex items-center justify-center"
-              >
-                ×
-              </button>
-              <div className="relative w-full h-full">
-                <img
-                  src={selectedImage.fullUrl}
-                  alt={selectedImage.name}
-                  className="max-w-full max-h-[90vh] object-contain mx-auto"
-                />
-              </div>
-              <p className="text-white text-center mt-4 text-sm">
-                {selectedImage.name}
-              </p>
+      {/* Modal - Büyük Fotoğraf */}
+      {selectedImage && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div className="relative max-w-7xl max-h-full">
+            <button
+              onClick={() => setSelectedImage(null)}
+              className="absolute top-4 right-4 text-white hover:text-gray-300 text-4xl font-bold z-10 bg-black bg-opacity-50 rounded-full w-12 h-12 flex items-center justify-center"
+            >
+              ×
+            </button>
+            <div className="relative w-full h-full">
+              <img
+                src={selectedImage.fullUrl}
+                alt={selectedImage.name}
+                className="max-w-full max-h-[90vh] object-contain mx-auto"
+              />
             </div>
+            <p className="text-white text-center mt-4 text-sm">
+              {selectedImage.name}
+            </p>
           </div>
-        )}
-      </div>
+        </div>
+      )}
+    </div>
   )
 }
 
