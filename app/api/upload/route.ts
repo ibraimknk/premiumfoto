@@ -29,7 +29,22 @@ export async function POST(request: Request) {
     }
 
     // FormData'yı al (admin upload route'u gibi basit)
-    const formData = await request.formData()
+    let formData: FormData
+    try {
+      formData = await request.formData()
+    } catch (error: any) {
+      console.error("FormData parse error:", error)
+      const contentType = request.headers.get("content-type") || "unknown"
+      return NextResponse.json(
+        { 
+          error: "Failed to parse body as FormData.",
+          details: error.message || "Unknown error",
+          contentType: contentType,
+          hint: "Make sure you're sending multipart/form-data with 'file' field"
+        },
+        { status: 400 }
+      )
+    }
 
     const file = formData.get("file") as File
 
