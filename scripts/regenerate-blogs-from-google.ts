@@ -343,7 +343,31 @@ async function main() {
       console.log(`${index + 1}. ${url}`)
     })
 
-    console.log("\n🔄 Blog'lar oluşturuluyor...\n")
+    // Mevcut blog sayısını kontrol et
+    const existingBlogs = await prisma.blogPost.findMany({
+      select: { slug: true },
+    })
+    const existingSlugs = new Set(existingBlogs.map(b => b.slug))
+    const missingUrls = urls.filter(url => {
+      const slug = extractSlugFromUrl(url)
+      return !existingSlugs.has(slug)
+    })
+
+    console.log(`\n📊 İstatistikler:`)
+    console.log(`   Toplam URL: ${urls.length}`)
+    console.log(`   Mevcut blog: ${existingBlogs.length}`)
+    console.log(`   Eksik blog: ${missingUrls.length}`)
+
+    if (missingUrls.length === 0) {
+      console.log(`\n✅ Tüm blog'lar zaten mevcut!`)
+      await prisma.$disconnect()
+      return
+    }
+
+    console.log(`\n🔄 Eksik ${missingUrls.length} blog oluşturuluyor...\n`)
+    
+    // Sadece eksik URL'leri işle
+    urls = missingUrls
 
     // 2. Her URL için blog oluştur
     const results = {
@@ -358,6 +382,16 @@ async function main() {
       try {
         console.log(`\n[${i + 1}/${urls.length}] İşleniyor: ${url}`)
         console.log(`   Slug: ${slug}`)
+
+        // Önce mevcut blogu kontrol et
+        const existingPost = await prisma.blogPost.findUnique({
+          where: { slug },
+        })
+
+        if (existingPost) {
+          console.log(`   ⏭️  Blog zaten mevcut, atlanıyor: ${existingPost.title}`)
+          continue // Mevcut blog varsa, atla
+        }
 
         // URL'den konuyu çıkar
         const topic = await extractTopicFromUrl(url)
