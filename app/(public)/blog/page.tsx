@@ -25,7 +25,7 @@ export default async function BlogPage() {
   const posts = await prisma.blogPost.findMany({
     where: { 
       isPublished: true,
-      // publishedAt null olmamalı (opsiyonel kontrol)
+      publishedAt: { not: null }, // publishedAt null olmamalı
     },
     orderBy: { publishedAt: 'desc' },
   })
