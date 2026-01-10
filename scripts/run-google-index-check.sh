@@ -28,7 +28,18 @@ if ! command -v python3 &> /dev/null; then
     PYTHON_CMD="python"
 fi
 
-# Gerekli paketleri kontrol et
+# Virtual environment oluştur/kontrol et
+VENV_DIR="venv"
+if [ ! -d "$VENV_DIR" ]; then
+    echo -e "${YELLOW}📦 Python virtual environment oluşturuluyor...${NC}"
+    $PYTHON_CMD -m venv "$VENV_DIR"
+    echo -e "${GREEN}✅ Virtual environment oluşturuldu${NC}"
+fi
+
+# Virtual environment'ı aktifleştir
+source "$VENV_DIR/bin/activate"
+
+# Gerekli paketleri kontrol et ve kur
 echo -e "${YELLOW}📦 Python paketleri kontrol ediliyor...${NC}"
 REQUIRED_PACKAGES=(
     "google-auth"
@@ -48,7 +59,7 @@ done
 
 if [ ${#MISSING_PACKAGES[@]} -gt 0 ]; then
     echo -e "${YELLOW}📦 Eksik paketler kuruluyor: ${MISSING_PACKAGES[*]}${NC}"
-    $PYTHON_CMD -m pip install "${MISSING_PACKAGES[@]}"
+    pip install "${MISSING_PACKAGES[@]}"
 fi
 
 # client_secret.json kontrolü
@@ -80,7 +91,8 @@ echo ""
 echo -e "${BLUE}🔄 Google Search Console API ile URL'ler kontrol ediliyor...${NC}"
 echo ""
 
-$PYTHON_CMD google.py \
+# Virtual environment içindeki Python'u kullan
+python google.py \
     --client-secret client_secret.json \
     --site-url "$SITE_URL" \
     --sitemap "$SITEMAP" \
