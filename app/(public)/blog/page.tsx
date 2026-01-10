@@ -27,12 +27,27 @@ export default async function BlogPage() {
       isPublished: true,
       publishedAt: { not: null }, // publishedAt null olmamalı
     },
-    orderBy: { publishedAt: 'desc' },
+    orderBy: { publishedAt: 'desc' as const },
   })
   
-  // Debug için log (sadece development'ta)
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`Blog sayfası: ${posts.length} yayınlanmış blog bulundu`)
+  // Debug için log - production'da da çalışsın
+  console.log(`[Blog Page] ${posts.length} yayınlanmış blog bulundu`)
+  
+  if (posts.length === 0) {
+    // Debug: Tüm blog'ları kontrol et
+    const allPosts = await prisma.blogPost.findMany({
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        isPublished: true,
+        publishedAt: true,
+      },
+    })
+    console.log(`[Blog Page Debug] Toplam blog sayısı: ${allPosts.length}`)
+    console.log(`[Blog Page Debug] isPublished=true olanlar: ${allPosts.filter(p => p.isPublished).length}`)
+    console.log(`[Blog Page Debug] publishedAt not null olanlar: ${allPosts.filter(p => p.publishedAt !== null).length}`)
+    console.log(`[Blog Page Debug] Her ikisi de olanlar: ${allPosts.filter(p => p.isPublished && p.publishedAt !== null).length}`)
   }
 
   return (
