@@ -318,6 +318,43 @@ async function saveBlogToDatabase(blogData: any, originalUrl: string): Promise<a
 }
 
 /**
+ * Veritabanındaki tüm blog slug'larını al
+ */
+async function getExistingBlogSlugs(): Promise<Set<string>> {
+  try {
+    const posts = await prisma.blogPost.findMany({
+      select: { slug: true },
+    })
+    const slugs = new Set(posts.map(post => post.slug))
+    console.log(`📊 Veritabanında ${slugs.size} mevcut blog bulundu`)
+    return slugs
+  } catch (error: any) {
+    console.error("❌ Veritabanı okuma hatası:", error.message)
+    return new Set()
+  }
+}
+
+/**
+ * Eksik blog URL'lerini filtrele (veritabanında olmayan)
+ */
+async function filterMissingBlogs(urls: string[]): Promise<string[]> {
+  const existingSlugs = await getExistingBlogSlugs()
+  const missingUrls: string[] = []
+
+  for (const url of urls) {
+    const slug = extractSlugFromUrl(url)
+    if (!existingSlugs.has(slug)) {
+      missingUrls.push(url)
+      console.log(`   ⚠️  Eksik: ${slug} (${url})`)
+    } else {
+      console.log(`   ✅ Mevcut: ${slug}`)
+    }
+  }
+
+  return missingUrls
+}
+
+/**
  * Ana fonksiyon
  */
 async function main() {
@@ -338,60 +375,37 @@ async function main() {
       return
     }
 
-    console.log(`\n📋 ${urls.length} blog URL'i bulundu:\n`)
-    urls.forEach((url, index) => {
-      console.log(`${index + 1}. ${url}`)
-    })
+    console.log(`\n📋 Google'dan ${urls.length} blog URL'i bulundu\n`)
 
-    // Mevcut blog sayısını kontrol et
-    const existingBlogs = await prisma.blogPost.findMany({
-      select: { slug: true },
-    })
-    const existingSlugs = new Set(existingBlogs.map(b => b.slug))
-    const missingUrls = urls.filter(url => {
-      const slug = extractSlugFromUrl(url)
-      return !existingSlugs.has(slug)
-    })
-
-    console.log(`\n📊 İstatistikler:`)
-    console.log(`   Toplam URL: ${urls.length}`)
-    console.log(`   Mevcut blog: ${existingBlogs.length}`)
-    console.log(`   Eksik blog: ${missingUrls.length}`)
-
+    // 3. Veritabanındaki mevcut blog'ları kontrol et
+    console.log("🔍 Veritabanındaki mevcut blog'lar kontrol ediliyor...\n")
+    const missingUrls = await filterMissingBlogs(urls)
+    
     if (missingUrls.length === 0) {
-      console.log(`\n✅ Tüm blog'lar zaten mevcut!`)
-      await prisma.$disconnect()
+      console.log("\n✅ Tüm blog'lar zaten veritabanında mevcut! Eksik blog yok.")
       return
     }
 
-    console.log(`\n🔄 Eksik ${missingUrls.length} blog oluşturuluyor...\n`)
-    
-    // Sadece eksik URL'leri işle
-    urls = missingUrls
+    console.log(`\n📋 ${missingUrls.length} eksik blog URL'i bulundu:\n`)
+    missingUrls.forEach((url, index) => {
+      console.log(`${index + 1}. ${url}`)
+    })
 
-    // 2. Her URL için blog oluştur
+    console.log("\n🔄 Eksik blog'lar oluşturuluyor...\n")
+
+    // 4. Sadece eksik URL'ler için blog oluştur
     const results = {
       success: [] as any[],
       failed: [] as { url: string; error: string }[],
     }
 
-    for (let i = 0; i < urls.length; i++) {
-      const url = urls[i]
+    for (let i = 0; i < missingUrls.length; i++) {
+      const url = missingUrls[i]
       const slug = extractSlugFromUrl(url)
 
       try {
-        console.log(`\n[${i + 1}/${urls.length}] İşleniyor: ${url}`)
-        console.log(`   Slug: ${slug}`)
-
-        // Önce mevcut blogu kontrol et
-        const existingPost = await prisma.blogPost.findUnique({
-          where: { slug },
-        })
-
-        if (existingPost) {
-          console.log(`   ⏭️  Blog zaten mevcut, atlanıyor: ${existingPost.title}`)
-          continue // Mevcut blog varsa, atla
-        }
+        console.log(`\n[${i + 1}/${missingUrls.length}] İşleniyor: ${url}`)
+        console.log(`   Slug: ${slug} (Google index'i korunuyor)`)
 
         // URL'den konuyu çıkar
         const topic = await extractTopicFromUrl(url)
@@ -409,7 +423,7 @@ async function main() {
         }
 
         // Rate limit için bekleme
-        if (i < urls.length - 1) {
+        if (i < missingUrls.length - 1) {
           await new Promise(resolve => setTimeout(resolve, 3000)) // 3 saniye bekle
         }
       } catch (error: any) {
