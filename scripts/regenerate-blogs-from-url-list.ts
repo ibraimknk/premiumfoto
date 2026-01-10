@@ -281,10 +281,47 @@ async function saveBlogToDatabase(blogData: any, originalUrl: string): Promise<a
 }
 
 /**
+ * Veritabanındaki tüm blog slug'larını al
+ */
+async function getExistingBlogSlugs(): Promise<Set<string>> {
+  try {
+    const posts = await prisma.blogPost.findMany({
+      select: { slug: true },
+    })
+    const slugs = new Set(posts.map(post => post.slug))
+    console.log(`📊 Veritabanında ${slugs.size} mevcut blog bulundu`)
+    return slugs
+  } catch (error: any) {
+    console.error("❌ Veritabanı okuma hatası:", error.message)
+    return new Set()
+  }
+}
+
+/**
+ * Eksik blog URL'lerini filtrele (veritabanında olmayan)
+ */
+async function filterMissingBlogs(urls: string[]): Promise<string[]> {
+  const existingSlugs = await getExistingBlogSlugs()
+  const missingUrls: string[] = []
+
+  for (const url of urls) {
+    const slug = extractSlugFromUrl(url)
+    if (!existingSlugs.has(slug)) {
+      missingUrls.push(url)
+      console.log(`   ⚠️  Eksik: ${slug} (${url})`)
+    } else {
+      console.log(`   ✅ Mevcut: ${slug}`)
+    }
+  }
+
+  return missingUrls
+}
+
+/**
  * Ana fonksiyon
  */
 async function main() {
-  console.log("🚀 URL listesinden blog'lar oluşturuluyor...\n")
+  console.log("🚀 URL listesinden eksik blog'lar oluşturuluyor...\n")
 
   try {
     // 1. URL listesini parse et ve benzersiz URL'leri çıkar
@@ -300,21 +337,35 @@ async function main() {
       console.log(`${index + 1}. ${url}`)
     })
 
-    console.log("\n🔄 Blog'lar oluşturuluyor...\n")
+    // 2. Veritabanındaki mevcut blog'ları kontrol et
+    console.log("\n🔍 Veritabanındaki mevcut blog'lar kontrol ediliyor...\n")
+    const missingUrls = await filterMissingBlogs(urls)
+    
+    if (missingUrls.length === 0) {
+      console.log("\n✅ Tüm blog'lar zaten veritabanında mevcut! Eksik blog yok.")
+      return
+    }
 
-    // 2. Her URL için blog oluştur
+    console.log(`\n📋 ${missingUrls.length} eksik blog URL'i bulundu:\n`)
+    missingUrls.forEach((url, index) => {
+      console.log(`${index + 1}. ${url}`)
+    })
+
+    console.log("\n🔄 Eksik blog'lar oluşturuluyor...\n")
+
+    // 3. Sadece eksik URL'ler için blog oluştur
     const results = {
       success: [] as any[],
       failed: [] as { url: string; error: string }[],
     }
 
-    for (let i = 0; i < urls.length; i++) {
-      const url = urls[i]
+    for (let i = 0; i < missingUrls.length; i++) {
+      const url = missingUrls[i]
       const slug = extractSlugFromUrl(url)
 
       try {
-        console.log(`\n[${i + 1}/${urls.length}] İşleniyor: ${url}`)
-        console.log(`   Slug: ${slug}`)
+        console.log(`\n[${i + 1}/${missingUrls.length}] İşleniyor: ${url}`)
+        console.log(`   Slug: ${slug} (Google index'i korunuyor)`)
 
         // URL'den konuyu çıkar
         const topic = await extractTopicFromUrl(url)
@@ -332,7 +383,7 @@ async function main() {
         }
 
         // Rate limit için bekleme
-        if (i < urls.length - 1) {
+        if (i < missingUrls.length - 1) {
           await new Promise(resolve => setTimeout(resolve, 3000)) // 3 saniye bekle
         }
       } catch (error: any) {
