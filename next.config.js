@@ -27,7 +27,8 @@ const nextConfig = {
   
   // trendyol-manager klasörünü build'den hariç tut
   // Next.js otomatik olarak app/ klasörünü tarar, trendyol-manager'ı exclude etmek için
-  // webpack config kullanıyoruz
+  // webpack config ve pageExtensions kullanıyoruz
+  pageExtensions: ['page.tsx', 'page.ts', 'route.tsx', 'route.ts', 'tsx', 'ts', 'jsx', 'js'],
   webpack: (config, { isServer }) => {
     // trendyol-manager klasöründeki dosyaları build'den hariç tut
     // Bu klasördeki dosyalar TypeScript type checking'den geçmeyecek
@@ -39,6 +40,20 @@ const nextConfig = {
     })
     
     return config
+  },
+  // TypeScript config'de de exclude et
+  typescript: {
+    // !! WARN !!
+    // Dangerously allow production builds to successfully complete even if
+    // your project has type errors.
+    // !! WARN !!
+    ignoreBuildErrors: false,
+  },
+  eslint: {
+    // Warning: This allows production builds to successfully complete even if
+    // your project has ESLint errors.
+    ignoreDuringBuilds: false,
+    dirs: ['app', 'components', 'lib'],
   },
 }
 
