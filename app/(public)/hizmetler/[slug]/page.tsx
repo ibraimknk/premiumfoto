@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation"
 import { prisma } from "@/lib/prisma"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
@@ -10,6 +11,7 @@ import { generatePageMetadata, generateServiceSchema, generateBreadcrumbSchema }
 import Container from "@/components/layout/Container"
 import { AnimatedSection } from "@/components/features/AnimatedSection"
 import { shouldUnoptimizeImage } from "@/lib/image-utils"
+import { BreadcrumbNav } from "@/components/features/BreadcrumbNav"
 
 export async function generateStaticParams() {
   const services = await prisma.service.findMany({
@@ -64,6 +66,21 @@ export default async function ServiceDetailPage({
   const images = service.images ? JSON.parse(service.images) : []
   const videos = service.videos ? JSON.parse(service.videos) : []
 
+  // Get related blog posts for this service
+  const relatedBlogs = await prisma.blogPost.findMany({
+    where: {
+      isPublished: true,
+      publishedAt: { not: null },
+      OR: [
+        { title: { contains: service.title, mode: 'insensitive' } },
+        { category: service.category || undefined },
+        { content: { contains: service.title, mode: 'insensitive' } },
+      ],
+    },
+    take: 3,
+    orderBy: { publishedAt: 'desc' },
+  })
+
   const serviceSchema = generateServiceSchema({
     title: service.title,
     description: service.shortDescription || service.description,
@@ -90,6 +107,14 @@ export default async function ServiceDetailPage({
         <section className="py-16 md:py-24 bg-white border-b">
           <Container size="md">
             <AnimatedSection>
+              {/* Breadcrumb */}
+              <BreadcrumbNav
+                items={[
+                  { name: 'Hizmetler', url: '/hizmetler' },
+                  { name: service.title, url: `/hizmetler/${service.slug}` },
+                ]}
+              />
+              
               {/* Header */}
               <div className="mb-8">
                 <h1 className="text-4xl md:text-5xl font-bold mb-4 text-neutral-900">{service.title}</h1>

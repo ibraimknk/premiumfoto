@@ -129,6 +129,14 @@ export default async function BlogPostPage({
         <section className="py-16 md:py-24 bg-white border-b">
           <Container size="md">
             <AnimatedSection>
+              {/* Breadcrumb */}
+              <BreadcrumbNav
+                items={[
+                  { name: 'Blog', url: '/blog' },
+                  { name: post.title, url: `/blog/${post.slug}` },
+                ]}
+              />
+              
               {/* Header */}
               <div className="mb-8">
                 {post.category && (
@@ -137,9 +145,17 @@ export default async function BlogPostPage({
                   </span>
                 )}
                 <h1 className="text-4xl md:text-5xl font-bold mb-4 text-neutral-900">{post.title}</h1>
-                {post.publishedAt && (
-                  <p className="text-neutral-600">{formatDate(post.publishedAt)}</p>
-                )}
+                <div className="flex flex-col sm:flex-row gap-2 text-neutral-600 text-sm">
+                  {post.publishedAt && (
+                    <span>Yayınlanma: {formatDate(post.publishedAt)}</span>
+                  )}
+                  {post.updatedAt && post.updatedAt.getTime() !== post.publishedAt?.getTime() && (
+                    <>
+                      <span className="hidden sm:inline">•</span>
+                      <span>Son güncelleme: {formatDate(post.updatedAt)}</span>
+                    </>
+                  )}
+                </div>
               </div>
             </AnimatedSection>
           </Container>
@@ -156,6 +172,15 @@ export default async function BlogPostPage({
                   fill
                   className="object-cover"
                   unoptimized={shouldUnoptimizeImage(getBlogImage(post.coverImage))}
+                />
+              </div>
+
+              {/* Social Share */}
+              <div className="mb-6 pb-6 border-b border-neutral-200">
+                <SocialShare
+                  url={`${process.env.NEXT_PUBLIC_SITE_URL || 'https://fotougur.com.tr'}/blog/${post.slug}`}
+                  title={post.title}
+                  description={post.excerpt || undefined}
                 />
               </div>
 
