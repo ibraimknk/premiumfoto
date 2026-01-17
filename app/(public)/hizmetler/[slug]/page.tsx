@@ -87,7 +87,8 @@ export default async function ServiceDetailPage({
       isActive: true,
       OR: [
         { question: { contains: service.title, mode: 'insensitive' } },
-        answer: { contains: service.title, mode: 'insensitive' } },
+        { answer: { contains: service.title, mode: 'insensitive' } },
+        { question: { contains: service.category || '', mode: 'insensitive' } },
       ],
     },
     orderBy: { order: 'asc' },
