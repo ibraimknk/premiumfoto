@@ -47,7 +47,7 @@ export async function GET() {
     where: {
       isActive: true,
       type: 'photo',
-      url: { not: null },
+      url: { not: { equals: '' } }, // Filter out empty strings
     },
     select: {
       id: true,
