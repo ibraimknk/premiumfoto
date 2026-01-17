@@ -14,10 +14,13 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 export async function generateMetadata() {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://fotougur.com.tr"
   return await generatePageMetadata(
     "Foto Uğur | Ataşehir Fotoğrafçı | Dış Mekan, Düğün, Ürün Çekimi",
     "Ataşehir fotoğrafçı ve İstanbul fotoğrafçı hizmetleri. İstanbul düğün fotoğrafçısı olarak dış mekan çekimi, ürün fotoğrafçılığı ve profesyonel fotoğraf hizmetleri sunuyoruz. 1997'den beri güvenilir hizmet.",
-    "ataşehir fotoğrafçı, istanbul fotoğrafçı, istanbul düğün fotoğrafçısı, dış mekan çekimi, ürün fotoğrafçılığı"
+    "ataşehir fotoğrafçı, istanbul fotoğrafçı, istanbul düğün fotoğrafçısı, dış mekan çekimi, ürün fotoğrafçılığı",
+    undefined,
+    baseUrl
   )
 }
 

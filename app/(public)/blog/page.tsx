@@ -14,10 +14,13 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 export async function generateMetadata() {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://fotougur.com.tr"
   return await generatePageMetadata(
     "Blog - Foto Uğur",
     "Fotoğrafçılık hakkında ipuçları, haberler ve daha fazlası.",
-    "blog, fotoğraf ipuçları, fotoğrafçılık"
+    "blog, fotoğraf ipuçları, fotoğrafçılık",
+    undefined,
+    `${baseUrl}/blog`
   )
 }
 

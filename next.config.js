@@ -21,7 +21,12 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: '50mb',
     },
+    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
   },
+  // Performance optimizations
+  compress: true,
+  poweredByHeader: false,
+  reactStrictMode: true,
   // API routes için body size limit (App Router)
   // Not: Bu Next.js 14'te geçersiz, serverActions kullanılıyor
   

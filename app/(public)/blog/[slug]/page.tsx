@@ -38,11 +38,15 @@ export async function generateMetadata({
     return {}
   }
 
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://fotougur.com.tr"
+  const canonicalUrl = `${baseUrl}/blog/${post.slug}`
+
   return await generatePageMetadata(
     post.seoTitle || post.title,
     post.seoDescription || post.excerpt || undefined,
     post.seoKeywords || undefined,
-    getBlogImage(post.ogImage || post.coverImage)
+    getBlogImage(post.ogImage || post.coverImage),
+    canonicalUrl
   )
 }
 
@@ -68,6 +72,13 @@ export default async function BlogPostPage({
     },
     take: 3,
     orderBy: { publishedAt: 'desc' },
+  })
+
+  // Get related services for internal linking
+  const relatedServices = await prisma.service.findMany({
+    where: { isActive: true },
+    take: 3,
+    orderBy: { order: 'asc' },
   })
 
   const articleSchema = generateArticleSchema({
@@ -154,6 +165,31 @@ export default async function BlogPostPage({
                   className="prose prose-lg max-w-none mb-12 prose-headings:text-neutral-900 prose-p:text-neutral-600 prose-p:leading-relaxed"
                   dangerouslySetInnerHTML={{ __html: post.content }}
                 />
+              )}
+
+              {/* Related Services - Internal Linking */}
+              {relatedServices.length > 0 && (
+                <div className="mb-12 p-6 bg-amber-50 rounded-2xl border border-amber-200">
+                  <h2 className="text-2xl font-bold mb-4 text-neutral-900">İlgili Hizmetlerimiz</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {relatedServices.map((service) => (
+                      <Link
+                        key={service.id}
+                        href={`/hizmetler/${service.slug}`}
+                        className="group p-4 bg-white rounded-lg hover:shadow-md transition-all border border-neutral-200 hover:border-amber-400"
+                      >
+                        <h3 className="font-semibold text-neutral-900 group-hover:text-amber-600 transition-colors mb-2">
+                          {service.title}
+                        </h3>
+                        {service.shortDescription && (
+                          <p className="text-sm text-neutral-600 line-clamp-2">
+                            {service.shortDescription}
+                          </p>
+                        )}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
               )}
 
               {/* Related Posts */}

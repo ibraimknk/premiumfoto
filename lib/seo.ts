@@ -5,20 +5,25 @@ export async function generatePageMetadata(
   title?: string,
   description?: string,
   keywords?: string,
-  image?: string
+  image?: string,
+  canonicalUrl?: string
 ): Promise<Metadata> {
   const settings = await prisma.siteSetting.findFirst()
   const siteName = settings?.siteName || "Foto Uğur"
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://fotougur.com"
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://fotougur.com.tr"
+  const canonical = canonicalUrl || siteUrl
 
   return {
     title: title || settings?.defaultTitle || `${siteName} | Ataşehir Fotoğrafçı | Dış Mekan, Düğün, Ürün Çekimi | Uğur Fotoğrafçılık`,
     description: description || settings?.defaultDescription || "Foto Uğur ve Uğur Fotoğrafçılık olarak Ataşehir fotoğrafçı ve İstanbul fotoğrafçı hizmetleri. İstanbul düğün fotoğrafçısı olarak 1997'den beri profesyonel fotoğraf hizmetleri sunuyoruz. Dış mekan çekimi, ürün fotoğrafçılığı, düğün fotoğrafçılığı ve daha fazlası.",
     keywords: keywords || "foto uğur, uğur fotoğrafçılık, ataşehir fotoğrafçı, istanbul fotoğrafçı, istanbul düğün fotoğrafçısı, dış mekan çekimi, ürün fotoğrafçılığı, ataşehir düğün fotoğrafçısı",
+    alternates: {
+      canonical: canonical,
+    },
     openGraph: {
       title: title || settings?.defaultTitle || siteName,
       description: description || settings?.defaultDescription || "",
-      url: siteUrl,
+      url: canonical,
       siteName,
       images: image ? [{ url: image }] : [],
       locale: "tr_TR",

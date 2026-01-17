@@ -35,11 +35,15 @@ export async function generateMetadata({
     return {}
   }
 
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://fotougur.com.tr"
+  const canonicalUrl = `${baseUrl}/hizmetler/${service.slug}`
+
   return await generatePageMetadata(
     service.seoTitle || service.title,
     service.seoDescription || service.shortDescription || undefined,
     service.seoKeywords || undefined,
-    service.ogImage || service.featuredImage || undefined
+    service.ogImage || service.featuredImage || undefined,
+    canonicalUrl
   )
 }
 

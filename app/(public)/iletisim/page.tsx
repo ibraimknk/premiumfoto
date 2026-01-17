@@ -8,10 +8,13 @@ import Container from "@/components/layout/Container"
 import { AnimatedSection } from "@/components/features/AnimatedSection"
 
 export async function generateMetadata() {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://fotougur.com.tr"
   return await generatePageMetadata(
     "İletişim - Foto Uğur",
     "Randevu almak veya sorularınız için bize ulaşın. Ataşehir, İstanbul.",
-    "iletişim, randevu, ataşehir fotoğrafçı"
+    "iletişim, randevu, ataşehir fotoğrafçı",
+    undefined,
+    `${baseUrl}/iletisim`
   )
 }
 
