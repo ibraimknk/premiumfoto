@@ -42,19 +42,20 @@ export async function GET() {
     },
   })
 
-  // Gallery images - using GalleryItem model
-  const galleryItems = await prisma.galleryItem.findMany({
+  // Gallery images - using Media model (GalleryItem doesn't exist)
+  const galleryItems = await prisma.media.findMany({
     where: {
       isActive: true,
-      imageUrl: { not: null },
+      type: 'photo',
+      url: { not: null },
     },
     select: {
       id: true,
-      imageUrl: true,
+      url: true,
       title: true,
       updatedAt: true,
     },
-  }).catch(() => []) // If model doesn't exist, return empty array
+  })
 
   // Image entries oluştur
   const imageEntries: string[] = []
@@ -124,12 +125,12 @@ export async function GET() {
     }
   })
 
-  // Gallery images
+  // Gallery images (using Media model)
   galleryItems.forEach((item) => {
-    if (item.imageUrl) {
-      const imageUrl = item.imageUrl.startsWith('http')
-        ? item.imageUrl
-        : `${baseUrl}${item.imageUrl.startsWith('/') ? '' : '/'}${item.imageUrl}`
+    if (item.url) {
+      const imageUrl = item.url.startsWith('http')
+        ? item.url
+        : `${baseUrl}${item.url.startsWith('/') ? '' : '/'}${item.url}`
       
       const title = item.title || 'Foto Uğur galeri çalışması'
       
