@@ -47,3 +47,6 @@ next-env.d.ts
 /public/uploads
 /uploads
 
+# trendyol-manager (build'den hariç tutulacak)
+/trendyol-manager
+
