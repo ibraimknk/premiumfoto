@@ -84,7 +84,7 @@ export default async function BlogPage() {
               <div className="relative h-48 w-full overflow-hidden rounded-t-lg">
                 <Image
                   src={getBlogImage(post.coverImage)}
-                  alt={`${post.title} - Foto Uğur blog yazısı`}
+                  alt={`${post.title} - Ataşehir fotoğrafçı Foto Uğur blog yazısı | Uğur Fotoğrafçılık`}
                   fill
                   className="object-cover"
                   unoptimized={shouldUnoptimizeImage(getBlogImage(post.coverImage))}

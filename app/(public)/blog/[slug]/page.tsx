@@ -152,7 +152,7 @@ export default async function BlogPostPage({
               <div className="relative h-96 w-full mb-8 rounded-2xl overflow-hidden">
                 <Image
                   src={getBlogImage(post.coverImage)}
-                  alt={`${post.title} - Foto Uğur blog yazısı`}
+                  alt={`${post.title} - Ataşehir fotoğrafçı Foto Uğur blog yazısı | Uğur Fotoğrafçılık`}
                   fill
                   className="object-cover"
                   unoptimized={shouldUnoptimizeImage(getBlogImage(post.coverImage))}
@@ -206,7 +206,7 @@ export default async function BlogPostPage({
                         <div className="relative h-32 w-full mb-3 rounded-lg overflow-hidden">
                           <Image
                             src={getBlogImage(relatedPost.coverImage)}
-                            alt={`${relatedPost.title} - Foto Uğur blog yazısı`}
+                            alt={`${relatedPost.title} - Ataşehir fotoğrafçı Foto Uğur blog yazısı | Uğur Fotoğrafçılık`}
                             fill
                             className="object-cover group-hover:scale-110 transition-transform"
                             unoptimized={shouldUnoptimizeImage(getBlogImage(relatedPost.coverImage))}

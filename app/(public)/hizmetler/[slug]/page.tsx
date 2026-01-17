@@ -110,7 +110,7 @@ export default async function ServiceDetailPage({
                 <div className="relative h-96 w-full mb-8 rounded-2xl overflow-hidden">
                   <Image
                     src={service.featuredImage}
-                    alt={`${service.title} - Foto Uğur ${service.category || 'hizmet'} örneği`}
+                    alt={`${service.title} - Ataşehir fotoğrafçı Foto Uğur ${service.category || 'hizmet'} örneği | Uğur Fotoğrafçılık`}
                     fill
                     unoptimized={shouldUnoptimizeImage(service.featuredImage)}
                     className="object-cover"
@@ -135,7 +135,7 @@ export default async function ServiceDetailPage({
                       <div key={index} className="relative aspect-square rounded-lg overflow-hidden">
                         <Image
                           src={image}
-                          alt={`${service.title} örneği ${index + 1} - Foto Uğur ${service.category || 'çalışma'}`}
+                          alt={`${service.title} örneği ${index + 1} - Ataşehir fotoğrafçı Foto Uğur ${service.category || 'çalışma'} | Uğur Fotoğrafçılık`}
                           fill
                           className="object-cover"
                           unoptimized={shouldUnoptimizeImage(image)}

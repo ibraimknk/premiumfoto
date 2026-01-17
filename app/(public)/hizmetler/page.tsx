@@ -68,7 +68,7 @@ export default async function ServicesPage() {
                     <div className="relative h-48 w-full overflow-hidden">
                       <Image
                         src={service.featuredImage}
-                        alt={`${service.title} - Foto Uğur ${service.category || 'hizmet'} örneği`}
+                        alt={`${service.title} - Ataşehir fotoğrafçı Foto Uğur ${service.category || 'hizmet'} örneği | Uğur Fotoğrafçılık`}
                         fill
                         className="object-cover group-hover:scale-110 transition-transform duration-500"
                         unoptimized={shouldUnoptimizeImage(service.featuredImage)}

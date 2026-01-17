@@ -218,7 +218,7 @@ export default function FotolarPage() {
                   >
                     <Image
                       src={image.url}
-                      alt={image.name}
+                      alt={image.name ? `${image.name} - Ataşehir fotoğrafçı Foto Uğur | Uğur Fotoğrafçılık` : 'Ataşehir fotoğrafçı Foto Uğur çalışması | Uğur Fotoğrafçılık'}
                       fill
                       className="object-cover"
                       sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
@@ -314,7 +314,7 @@ export default function FotolarPage() {
             <div className="relative w-full h-full" onClick={(e) => e.stopPropagation()}>
               <img
                 src={selectedImage.fullUrl}
-                alt={selectedImage.name}
+                alt={selectedImage.name ? `${selectedImage.name} - Ataşehir fotoğrafçı Foto Uğur | Uğur Fotoğrafçılık` : 'Ataşehir fotoğrafçı Foto Uğur çalışması | Uğur Fotoğrafçılık'}
                 className="max-w-full max-h-[90vh] object-contain mx-auto"
               />
             </div>
