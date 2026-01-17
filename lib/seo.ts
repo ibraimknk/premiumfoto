@@ -6,7 +6,8 @@ export async function generatePageMetadata(
   description?: string,
   keywords?: string,
   image?: string,
-  canonicalUrl?: string
+  canonicalUrl?: string,
+  alternateLanguages?: Array<{ code: string; url: string }>
 ): Promise<Metadata> {
   const settings = await prisma.siteSetting.findFirst()
   const siteName = settings?.siteName || "Foto Uğur"
