@@ -1,63 +1,88 @@
-# 🔧 Sunucuda Build Hatası Çözümü
+# Build Hatası Çözümü - trendyol-manager
 
-## ❌ Sorunlar
+## 🔴 Sorun
 
-1. **Production build bulunamıyor**: `.next` dizininde build yok
-2. **Geçersiz next.config.js**: `api` key'i tanınmıyor
-
-## ✅ Çözüm
-
-### 1. next.config.js'yi Düzelt
-
-```bash
-cd ~/premiumfoto
-nano next.config.js
+Build sırasında şu hata oluşuyor:
+```
+Type error: Cannot find module '@/components/layout/Sidebar' or its corresponding type declarations.
+./trendyol-manager/frontend/app/accounting/page.tsx:5:21
 ```
 
-`api` key'ini kaldırın veya düzeltin.
+## ✅ Çözüm 1: trendyol-manager Klasörünü Taşı (Önerilen)
 
-### 2. Build Cache'i Temizle ve Build Et
+Sunucuda şu komutları çalıştırın:
 
 ```bash
 cd ~/premiumfoto
 
-# Build cache'i temizle
-rm -rf .next node_modules/.cache
+# trendyol-manager klasörünü geçici olarak taşı
+if [ -d "trendyol-manager" ]; then
+    mv trendyol-manager trendyol-manager.backup
+    echo "✅ trendyol-manager klasörü taşındı"
+fi
 
-# Build et
+# Git pull yap
+git pull
+
+# Build yap
 npm run build
-```
 
-### 3. PM2'yi Restart Et
-
-```bash
+# PM2 restart
 pm2 restart foto-ugur-app
 ```
 
-## 🔥 Tek Komutla Çözüm
+## ✅ Çözüm 2: Script ile Otomatik Düzeltme
+
+```bash
+cd ~/premiumfoto
+git pull
+bash scripts/fix-build-trendyol.sh
+npm run build
+pm2 restart foto-ugur-app
+```
+
+## ✅ Çözüm 3: Manuel Silme (Eğer Gereksizse)
+
+```bash
+cd ~/premiumfoto
+
+# trendyol-manager klasörünü sil (eğer gereksizse)
+rm -rf trendyol-manager
+
+# Git pull yap
+git pull
+
+# Build yap
+npm run build
+
+# PM2 restart
+pm2 restart foto-ugur-app
+```
+
+## 🔍 Kontrol
+
+Build sonrası kontrol:
+
+```bash
+# Build başarılı mı?
+pm2 logs foto-ugur-app --lines 20
+
+# trendyol-manager klasörü var mı?
+ls -la ~/premiumfoto/ | grep trendyol
+```
+
+## 📝 Notlar
+
+1. **trendyol-manager klasörü**: Bu klasör projeye ait değil, başka bir projeden kalmış olabilir
+2. **Yedekleme**: Eğer bu klasörü kullanıyorsanız, önce yedek alın
+3. **Git**: Bu klasör `.gitignore`'a eklendi, artık Git'e commit edilmeyecek
+
+## 🚀 Hızlı Çözüm (Tek Komut)
 
 ```bash
 cd ~/premiumfoto && \
-rm -rf .next node_modules/.cache && \
+[ -d "trendyol-manager" ] && mv trendyol-manager trendyol-manager.backup && \
+git pull && \
 npm run build && \
 pm2 restart foto-ugur-app
 ```
-
-## 📝 next.config.js Kontrolü
-
-Eğer `api` key'i varsa, kaldırın:
-
-```javascript
-// ❌ YANLIŞ
-module.exports = {
-  api: {
-    // ...
-  }
-}
-
-// ✅ DOĞRU
-module.exports = {
-  // api key'i yok
-}
-```
-
