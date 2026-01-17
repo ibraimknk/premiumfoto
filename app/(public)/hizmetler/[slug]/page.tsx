@@ -6,7 +6,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import Image from "next/image"
 import Link from "next/link"
 import { Phone, MessageCircle } from "lucide-react"
-import { generatePageMetadata, generateServiceSchema } from "@/lib/seo"
+import { generatePageMetadata, generateServiceSchema, generateBreadcrumbSchema } from "@/lib/seo"
 import Container from "@/components/layout/Container"
 import { AnimatedSection } from "@/components/features/AnimatedSection"
 import { shouldUnoptimizeImage } from "@/lib/image-utils"
@@ -66,11 +66,21 @@ export default async function ServiceDetailPage({
     slug: service.slug,
   })
 
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: "Ana Sayfa", url: "/" },
+    { name: "Hizmetler", url: "/hizmetler" },
+    { name: service.title, url: `/hizmetler/${service.slug}` },
+  ])
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
       <div className="bg-neutral-50">
         <section className="py-16 md:py-24 bg-white border-b">

@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Image from "next/image"
 import { formatDate } from "@/lib/utils"
-import { generatePageMetadata } from "@/lib/seo"
+import { generatePageMetadata, generateBlogListSchema } from "@/lib/seo"
 import Container from "@/components/layout/Container"
 import { AnimatedSection } from "@/components/features/AnimatedSection"
 import { shouldUnoptimizeImage } from "@/lib/image-utils"
@@ -50,8 +50,15 @@ export default async function BlogPage() {
     console.log(`[Blog Page Debug] Her ikisi de olanlar: ${allPosts.filter(p => p.isPublished && p.publishedAt !== null).length}`)
   }
 
+  const blogListSchema = generateBlogListSchema()
+
   return (
-    <div className="bg-neutral-50">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(blogListSchema) }}
+      />
+      <div className="bg-neutral-50">
       {/* Hero Section */}
       <section className="py-16 md:py-24 bg-white border-b">
         <Container>
@@ -119,6 +126,7 @@ export default async function BlogPage() {
         </Container>
       </section>
     </div>
+    </>
   )
 }
 

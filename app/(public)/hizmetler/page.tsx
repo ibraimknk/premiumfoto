@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
-import { generatePageMetadata } from "@/lib/seo"
+import { generatePageMetadata, generateServiceListSchema } from "@/lib/seo"
 import Container from "@/components/layout/Container"
 import { AnimatedSection } from "@/components/features/AnimatedSection"
 import { ArrowRight } from "lucide-react"
@@ -27,8 +27,21 @@ export default async function ServicesPage() {
     orderBy: { order: 'asc' },
   })
 
+  const serviceListSchema = generateServiceListSchema(
+    services.map((s) => ({
+      title: s.title,
+      slug: s.slug,
+      description: s.shortDescription || s.description || "",
+    }))
+  )
+
   return (
-    <div className="bg-neutral-50">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceListSchema) }}
+      />
+      <div className="bg-neutral-50">
       {/* Hero Section */}
       <section className="py-16 md:py-24 bg-white border-b">
         <Container>
@@ -85,5 +98,6 @@ export default async function ServicesPage() {
         </Container>
       </section>
     </div>
+    </>
   )
 }

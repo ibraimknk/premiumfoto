@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Phone, Mail, MapPin, Clock, MessageCircle } from "lucide-react"
 import { ContactForm } from "@/components/features/ContactForm"
-import { generatePageMetadata } from "@/lib/seo"
+import { generatePageMetadata, generateContactPageSchema } from "@/lib/seo"
 import Container from "@/components/layout/Container"
 import { AnimatedSection } from "@/components/features/AnimatedSection"
 
@@ -17,9 +17,15 @@ export async function generateMetadata() {
 
 export default async function ContactPage() {
   const settings = await prisma.siteSetting.findFirst()
+  const contactPageSchema = generateContactPageSchema()
 
   return (
-    <div className="bg-neutral-50">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(contactPageSchema) }}
+      />
+      <div className="bg-neutral-50">
       {/* Hero Section */}
       <section className="py-16 md:py-24 bg-white border-b">
         <Container>
@@ -152,5 +158,6 @@ export default async function ContactPage() {
         </Container>
       </section>
     </div>
+    </>
   )
 }

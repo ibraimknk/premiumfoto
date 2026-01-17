@@ -75,13 +75,44 @@ export default async function BlogPostPage({
     excerpt: post.excerpt,
     publishedAt: post.publishedAt,
     slug: post.slug,
+    coverImage: post.coverImage,
   })
+
+  // Breadcrumb schema
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Ana Sayfa",
+        "item": process.env.NEXT_PUBLIC_SITE_URL || "https://fotougur.com.tr",
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Blog",
+        "item": `${process.env.NEXT_PUBLIC_SITE_URL || "https://fotougur.com.tr"}/blog`,
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": post.title,
+        "item": `${process.env.NEXT_PUBLIC_SITE_URL || "https://fotougur.com.tr"}/blog/${post.slug}`,
+      },
+    ],
+  }
 
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
       <div className="bg-neutral-50">
         <section className="py-16 md:py-24 bg-white border-b">

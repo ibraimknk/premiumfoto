@@ -1,86 +1,59 @@
-# 🔄 Sunucu Güncelleme
+# Sunucuda Güncelleme Adımları
 
-## 📋 Durum
-
-- ✅ `package.json` yerelde güncellendi (port 3040)
-- ✅ `deploy.sh` yerelde güncellendi (port 3040)
-- ❌ Değişiklikler henüz sunucuya gitmedi
-
-## 🚀 Sunucuya Güncelleme
-
-### 1. Yerelde GitHub'a Push
-
-```bash
-# Değişiklikleri kontrol et
-git status
-
-# Değişiklikleri ekle
-git add package.json deploy.sh
-
-# Commit
-git commit -m "Port 3040'a geri döndürüldü"
-
-# GitHub'a push
-git push origin main
-```
-
-### 2. Sunucuda Pull
+## 1. Git Pull Çakışmasını Çöz
 
 ```bash
 cd ~/premiumfoto
 
-# Son değişiklikleri çek
-git pull origin main
+# Çakışan test dosyalarını sil (sunucuda gerekli değil)
+rm -f test-api-simple.ps1 test-upload-alternative.ps1 test-upload-final.ps1 test-upload-fixed.ps1 test-upload-ps5.ps1 test-upload-simple.ps1 test-upload-working.ps1 test-upload.ps1
 
-# package.json kontrolü
-cat package.json | grep '"start"'
-# Çıktı: "start": "next start -p 3040", olmalı
+# Git pull yap
+git pull
+
+# Eğer hala çakışma varsa, force pull
+git fetch origin
+git reset --hard origin/main
 ```
 
-### 3. PM2'yi Yeniden Başlat
+## 2. Build ve Restart
 
 ```bash
-cd ~/premiumfoto
+# Build yap
+npm run build
 
-# PM2'yi durdur
-pm2 stop foto-ugur-app
-
-# PM2'yi yeniden başlat
+# PM2 restart
 pm2 restart foto-ugur-app
 
-# Durumu kontrol et
-pm2 status
-
 # Logları kontrol et
-pm2 logs foto-ugur-app --lines 20
+pm2 logs foto-ugur-app --lines 50
 ```
 
-## 🔥 Tek Komutla Tüm İşlemler (Sunucuda)
+## 3. Dosya Kontrolü
 
 ```bash
-cd ~/premiumfoto && \
-git pull origin main && \
-cat package.json | grep '"start"' && \
-pm2 restart foto-ugur-app && \
-pm2 status
+# Delete route'un var olduğunu kontrol et
+ls -la app/api/uploads/delete/route.ts
+
+# Fotolar sayfasını kontrol et
+ls -la "app/(public)/fotolar/page.tsx"
+
+# İçeriğini kontrol et (delete butonu var mı?)
+grep -n "handleDelete" "app/(public)/fotolar/page.tsx"
 ```
 
-## ✅ Doğrulama
+## 4. Tarayıcı Cache Temizle
+
+- Tarayıcıda `Ctrl + Shift + R` (hard refresh)
+- Veya `Ctrl + F5`
+- Veya Developer Tools > Network > "Disable cache" işaretle
+
+## 5. PM2 Log Kontrolü
 
 ```bash
-# package.json kontrolü
-cat package.json | grep '"start"'
-# Çıktı: "start": "next start -p 3040", olmalı
+# Hata var mı kontrol et
+pm2 logs foto-ugur-app --err --lines 100
 
-# Port 3040 kontrolü
-sudo lsof -i:3040
-# node process görünmeli
-
-# PM2 durumu
-pm2 status
-# foto-ugur-app "online" olmalı
-
-# Uygulama erişilebilir mi?
-curl -I http://localhost:3040
-# HTTP 200 dönmeli
+# Son 50 satır
+pm2 logs foto-ugur-app --lines 50
 ```

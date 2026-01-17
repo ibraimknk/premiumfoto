@@ -124,8 +124,9 @@ export function generateArticleSchema(post: {
   excerpt?: string | null
   publishedAt?: Date | null
   slug: string
+  coverImage?: string | null
 }) {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://fotougur.com"
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://fotougur.com.tr"
 
   return {
     "@context": "https://schema.org",
@@ -133,17 +134,205 @@ export function generateArticleSchema(post: {
     "headline": post.title,
     "description": post.excerpt || "",
     "datePublished": post.publishedAt?.toISOString() || new Date().toISOString(),
+    "dateModified": post.publishedAt?.toISOString() || new Date().toISOString(),
     "author": {
       "@type": "Organization",
       "name": "Foto Uğur - Uğur Fotoğrafçılık",
       "alternateName": ["Foto Uğur", "Uğur Fotoğrafçılık"],
+      "url": baseUrl,
     },
     "publisher": {
       "@type": "Organization",
       "name": "Foto Uğur - Uğur Fotoğrafçılık",
       "alternateName": ["Foto Uğur", "Uğur Fotoğrafçılık"],
+      "logo": {
+        "@type": "ImageObject",
+        "url": `${baseUrl}/logo.png`,
+      },
     },
+    "image": post.coverImage ? `${baseUrl}${post.coverImage}` : `${baseUrl}/logo.png`,
     "url": `${baseUrl}/blog/${post.slug}`,
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": `${baseUrl}/blog/${post.slug}`,
+    },
+  }
+}
+
+export function generateBlogListSchema() {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://fotougur.com.tr"
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "Blog",
+    "name": "Foto Uğur Blog",
+    "description": "Fotoğrafçılık hakkında ipuçları, haberler ve daha fazlası",
+    "url": `${baseUrl}/blog`,
+    "publisher": {
+      "@type": "Organization",
+      "name": "Foto Uğur - Uğur Fotoğrafçılık",
+      "alternateName": ["Foto Uğur", "Uğur Fotoğrafçılık"],
+      "logo": {
+        "@type": "ImageObject",
+        "url": `${baseUrl}/logo.png`,
+      },
+    },
+  }
+}
+
+export function generateServiceListSchema(services: Array<{ title: string; slug: string; description: string }>) {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://fotougur.com.tr"
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "itemListElement": services.map((service, index) => ({
+      "@type": "ListItem",
+      "position": index + 1,
+      "item": {
+        "@type": "Service",
+        "name": service.title,
+        "description": service.description,
+        "url": `${baseUrl}/hizmetler/${service.slug}`,
+        "provider": {
+          "@type": "LocalBusiness",
+          "name": "Foto Uğur - Uğur Fotoğrafçılık",
+        },
+      },
+    })),
+  }
+}
+
+export function generateContactPageSchema() {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://fotougur.com.tr"
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "ContactPage",
+    "name": "İletişim - Foto Uğur",
+    "description": "Randevu almak veya sorularınız için bize ulaşın",
+    "url": `${baseUrl}/iletisim`,
+    "mainEntity": {
+      "@type": "LocalBusiness",
+      "name": "Foto Uğur - Uğur Fotoğrafçılık",
+      "telephone": "02164724628",
+      "email": "info@fotougur.com.tr",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Mustafa Kemal Mah. 3001 Cad. No: 49/A",
+        "addressLocality": "Ataşehir",
+        "addressRegion": "İstanbul",
+        "postalCode": "34758",
+        "addressCountry": "TR",
+      },
+    },
+  }
+}
+
+export function generateBreadcrumbSchema(items: Array<{ name: string; url: string }>) {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://fotougur.com.tr"
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": items.map((item, index) => ({
+      "@type": "ListItem",
+      "position": index + 1,
+      "name": item.name,
+      "item": item.url.startsWith("http") ? item.url : `${baseUrl}${item.url}`,
+    })),
+  }
+}
+
+export function generateOrganizationSchema() {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://fotougur.com.tr"
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Foto Uğur - Uğur Fotoğrafçılık",
+    "alternateName": ["Foto Uğur", "Uğur Fotoğrafçılık"],
+    "url": baseUrl,
+    "logo": `${baseUrl}/logo.png`,
+    "image": `${baseUrl}/logo.png`,
+    "description": "Ataşehir fotoğrafçı ve İstanbul fotoğrafçı hizmetleri. 1997'den beri profesyonel fotoğraf hizmetleri sunuyoruz.",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Mustafa Kemal Mah. 3001 Cad. No: 49/A",
+      "addressLocality": "Ataşehir",
+      "addressRegion": "İstanbul",
+      "postalCode": "34758",
+      "addressCountry": "TR",
+    },
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "telephone": "+90-216-472-46-28",
+      "contactType": "customer service",
+      "areaServed": "TR",
+      "availableLanguage": ["Turkish"],
+    },
+    "sameAs": [
+      "https://www.facebook.com/fotougur",
+      "https://www.instagram.com/fotougur",
+    ],
+    "foundingDate": "1997",
+  }
+}
+
+export function generateReviewSchema(reviews: Array<{
+  name: string
+  rating: number
+  comment: string
+  date?: Date | null
+}>) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Foto Uğur - Uğur Fotoğrafçılık",
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": reviews.length > 0
+        ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
+        : "5.0",
+      "reviewCount": reviews.length,
+      "bestRating": "5",
+      "worstRating": "1",
+    },
+    "review": reviews.map((review) => ({
+      "@type": "Review",
+      "author": {
+        "@type": "Person",
+        "name": review.name,
+      },
+      "datePublished": review.date?.toISOString() || new Date().toISOString(),
+      "reviewBody": review.comment,
+      "reviewRating": {
+        "@type": "Rating",
+        "ratingValue": review.rating,
+        "bestRating": "5",
+        "worstRating": "1",
+      },
+    })),
+  }
+}
+
+export function generateWebSiteSchema() {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://fotougur.com.tr"
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Foto Uğur - Uğur Fotoğrafçılık",
+    "alternateName": ["Foto Uğur", "Uğur Fotoğrafçılık"],
+    "url": baseUrl,
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": `${baseUrl}/blog?search={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    },
   }
 }
 

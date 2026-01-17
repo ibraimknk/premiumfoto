@@ -3,7 +3,7 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Phone, Camera, Heart, Package, Users, MessageCircle, ArrowRight, Play, Star } from "lucide-react"
-import { generatePageMetadata, generateLocalBusinessSchema } from "@/lib/seo"
+import { generatePageMetadata, generateLocalBusinessSchema, generateOrganizationSchema, generateWebSiteSchema, generateReviewSchema } from "@/lib/seo"
 import { prisma } from "@/lib/prisma"
 import Container from "@/components/layout/Container"
 import { AnimatedSection } from "@/components/features/AnimatedSection"
@@ -70,6 +70,18 @@ export default async function HomePage() {
   }
 
   const localBusinessSchema = generateLocalBusinessSchema()
+  const organizationSchema = generateOrganizationSchema()
+  const webSiteSchema = generateWebSiteSchema()
+  const reviewSchema = testimonials.length > 0
+    ? generateReviewSchema(
+        testimonials.map((t) => ({
+          name: t.name,
+          rating: t.rating,
+          comment: t.comment,
+          date: t.createdAt,
+        }))
+      )
+    : null
 
   return (
     <>
@@ -77,6 +89,20 @@ export default async function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
       />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(webSiteSchema) }}
+      />
+      {reviewSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(reviewSchema) }}
+        />
+      )}
       <div className="bg-neutral-50">
         {/* Hero Section */}
         <section className="relative min-h-[60vh] md:min-h-[75vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-neutral-50 via-white to-amber-50/30">
