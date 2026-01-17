@@ -108,6 +108,14 @@ export default async function ServiceDetailPage({
     { name: service.title, url: `/hizmetler/${service.slug}` },
   ])
 
+  // FAQ Schema
+  const faqSchema = faqs.length > 0 ? generateFAQSchema(
+    faqs.map(faq => ({
+      question: faq.question,
+      answer: faq.answer,
+    }))
+  ) : null
+
   return (
     <>
       <script
