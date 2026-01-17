@@ -79,13 +79,14 @@ export default async function LocationPage({
   })
 
   // Get blog posts related to location
+  // Note: SQLite doesn't support 'mode: insensitive', so we use contains which is case-sensitive
   const blogPosts = await prisma.blogPost.findMany({
     where: {
       isPublished: true,
       publishedAt: { not: null },
       OR: [
-        { title: { contains: location.name, mode: 'insensitive' } },
-        { content: { contains: location.name, mode: 'insensitive' } },
+        { title: { contains: location.name } },
+        { content: { contains: location.name } },
       ],
     },
     take: 3,
