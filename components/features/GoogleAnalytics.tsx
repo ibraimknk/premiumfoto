@@ -7,7 +7,11 @@ interface GoogleAnalyticsProps {
 }
 
 export function GoogleAnalytics({ gaId }: GoogleAnalyticsProps) {
-  if (!gaId) {
+  // Default GA ID - kullanıcının verdiği ID
+  const defaultGaId = 'G-PR5RQ39RRG'
+  const finalGaId = gaId || process.env.NEXT_PUBLIC_GA_ID || defaultGaId
+
+  if (!finalGaId) {
     return null
   }
 
@@ -15,7 +19,7 @@ export function GoogleAnalytics({ gaId }: GoogleAnalyticsProps) {
     <>
       <Script
         strategy="afterInteractive"
-        src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+        src={`https://www.googletagmanager.com/gtag/js?id=${finalGaId}`}
       />
       <Script
         id="google-analytics"
@@ -25,9 +29,7 @@ export function GoogleAnalytics({ gaId }: GoogleAnalyticsProps) {
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
-            gtag('config', '${gaId}', {
-              page_path: window.location.pathname,
-            });
+            gtag('config', '${finalGaId}');
           `,
         }}
       />

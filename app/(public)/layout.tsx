@@ -7,11 +7,9 @@ export default function PublicLayout({
 }: {
   children: React.ReactNode
 }) {
-  const gaId = process.env.NEXT_PUBLIC_GA_ID
-
   return (
     <>
-      {gaId && <GoogleAnalytics gaId={gaId} />}
+      <GoogleAnalytics />
       <div className="flex flex-col min-h-screen">
         <Header />
         <main className="flex-1">{children}</main>
