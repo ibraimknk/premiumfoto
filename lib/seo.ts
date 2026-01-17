@@ -46,8 +46,17 @@ export async function generatePageMetadata(
   }
 }
 
-export function generateLocalBusinessSchema() {
+export function generateLocalBusinessSchema(options?: {
+  name?: string
+  address?: string
+  phone?: string
+  email?: string
+}) {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://fotougur.com"
+  const name = options?.name || "Foto Uğur - Uğur Fotoğrafçılık"
+  const address = options?.address || "Mustafa Kemal Mah. 3001 Cad. No: 49/A, Ataşehir, İstanbul"
+  const phone = options?.phone || "02164724628"
+  const email = options?.email || "info@fotougur.com.tr"
 
   return {
     "@context": "https://schema.org",
