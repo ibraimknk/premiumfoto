@@ -211,6 +211,31 @@ export default async function ServiceDetailPage({
               </CardContent>
               </Card>
 
+              {/* Related Blog Posts */}
+              {relatedBlogs.length > 0 && (
+                <div className="mb-12 p-6 bg-amber-50 rounded-2xl border border-amber-200">
+                  <h2 className="text-2xl font-bold mb-4 text-neutral-900">İlgili Blog Yazıları</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {relatedBlogs.map((blog) => (
+                      <Link
+                        key={blog.id}
+                        href={`/blog/${blog.slug}`}
+                        className="group p-4 bg-white rounded-lg hover:shadow-md transition-all border border-neutral-200 hover:border-amber-400"
+                      >
+                        <h3 className="font-semibold text-neutral-900 group-hover:text-amber-600 transition-colors mb-2">
+                          {blog.title}
+                        </h3>
+                        {blog.excerpt && (
+                          <p className="text-sm text-neutral-600 line-clamp-2">
+                            {blog.excerpt}
+                          </p>
+                        )}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Related Services */}
               <div>
                 <h2 className="text-2xl font-bold mb-6 text-neutral-900">Diğer Hizmetlerimiz</h2>
