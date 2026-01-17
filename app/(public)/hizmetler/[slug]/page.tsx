@@ -81,6 +81,19 @@ export default async function ServiceDetailPage({
     orderBy: { publishedAt: 'desc' },
   })
 
+  // Get FAQs for this service
+  const faqs = await prisma.fAQ.findMany({
+    where: {
+      isActive: true,
+      OR: [
+        { question: { contains: service.title, mode: 'insensitive' } },
+        answer: { contains: service.title, mode: 'insensitive' } },
+      ],
+    },
+    orderBy: { order: 'asc' },
+    take: 5,
+  })
+
   const serviceSchema = generateServiceSchema({
     title: service.title,
     description: service.shortDescription || service.description,

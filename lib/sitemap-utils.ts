@@ -53,6 +53,7 @@ export async function generateSitemapUrls(baseUrl: string) {
     "/kvkk",
     "/gizlilik-politikasi",
     "/cerez-politikasi",
+    "/lokasyon",
   ]
 
   // Dynamic pages - Services
@@ -81,6 +82,17 @@ export async function generateSitemapUrls(baseUrl: string) {
     priority: 0.7,
   }))
 
+  // Location pages
+  const locationPages = [
+    { slug: "atasehir", updatedAt: new Date() },
+    { slug: "istanbul", updatedAt: new Date() },
+  ].map((location) => ({
+    url: `${baseUrl}/lokasyon/${location.slug}`,
+    lastModified: location.updatedAt,
+    changeFrequency: "monthly" as const,
+    priority: 0.8,
+  }))
+
   const staticSitemap = staticPages.map((page) => ({
     url: `${baseUrl}${page}`,
     lastModified: new Date(),
@@ -88,6 +100,6 @@ export async function generateSitemapUrls(baseUrl: string) {
     priority: page === "" ? 1.0 : 0.9,
   }))
 
-  return [...staticSitemap, ...servicePages, ...blogPages]
+  return [...staticSitemap, ...servicePages, ...blogPages, ...locationPages]
 }
 
