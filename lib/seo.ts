@@ -19,6 +19,14 @@ export async function generatePageMetadata(
     keywords: keywords || "foto uğur, uğur fotoğrafçılık, ataşehir fotoğrafçı, istanbul fotoğrafçı, istanbul düğün fotoğrafçısı, dış mekan çekimi, ürün fotoğrafçılığı, ataşehir düğün fotoğrafçısı",
     alternates: {
       canonical: canonical,
+      languages: alternateLanguages
+        ? Object.fromEntries(
+            alternateLanguages.map((lang) => [lang.code, lang.url])
+          )
+        : {
+            'x-default': canonical,
+            'tr': canonical,
+          },
     },
     openGraph: {
       title: title || settings?.defaultTitle || siteName,
