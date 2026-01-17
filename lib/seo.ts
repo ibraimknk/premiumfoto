@@ -321,6 +321,38 @@ export function generateReviewSchema(reviews: Array<{
   }
 }
 
+export function generateVideoSchema(video: {
+  name: string
+  description?: string
+  thumbnailUrl?: string
+  uploadDate?: string
+  duration?: string
+  contentUrl: string
+  embedUrl?: string
+}) {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://fotougur.com.tr"
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "VideoObject",
+    "name": video.name,
+    "description": video.description || video.name,
+    "thumbnailUrl": video.thumbnailUrl || `${baseUrl}/images/default-video-thumb.jpg`,
+    "uploadDate": video.uploadDate || new Date().toISOString(),
+    "duration": video.duration,
+    "contentUrl": video.contentUrl,
+    "embedUrl": video.embedUrl || video.contentUrl,
+    "publisher": {
+      "@type": "Organization",
+      "name": "Foto Uğur - Uğur Fotoğrafçılık",
+      "logo": {
+        "@type": "ImageObject",
+        "url": `${baseUrl}/images/logo.png`,
+      },
+    },
+  }
+}
+
 export function generateWebSiteSchema() {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://fotougur.com.tr"
 
