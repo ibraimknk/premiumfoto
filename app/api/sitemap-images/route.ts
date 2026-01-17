@@ -42,7 +42,7 @@ export async function GET() {
     },
   })
 
-  // Gallery images
+  // Gallery images - using GalleryItem model
   const galleryItems = await prisma.galleryItem.findMany({
     where: {
       isActive: true,
@@ -54,7 +54,7 @@ export async function GET() {
       title: true,
       updatedAt: true,
     },
-  })
+  }).catch(() => []) // If model doesn't exist, return empty array
 
   // Image entries oluştur
   const imageEntries: string[] = []

@@ -93,12 +93,7 @@ export default async function LocationPage({
     orderBy: { publishedAt: 'desc' },
   })
 
-  const localBusinessSchema = generateLocalBusinessSchema({
-    name: "Foto Uğur",
-    address: location.address,
-    phone: location.phone,
-    email: location.email,
-  })
+  const localBusinessSchema = generateLocalBusinessSchema()
 
   return (
     <>
