@@ -116,6 +116,12 @@ export default async function ServiceDetailPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
+      {faqSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        />
+      )}
       <div className="bg-neutral-50">
         <section className="py-16 md:py-24 bg-white border-b">
           <Container size="md">
@@ -246,6 +252,30 @@ export default async function ServiceDetailPage({
                       </Link>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {/* FAQ Section */}
+              {faqs.length > 0 && (
+                <div className="mb-12">
+                  <h2 className="text-2xl font-bold mb-6 text-neutral-900">
+                    {service.title} Hakkında Sık Sorulan Sorular
+                  </h2>
+                  <Accordion type="single" collapsible className="w-full">
+                    {faqs.map((faq, index) => (
+                      <AccordionItem key={faq.id} value={`faq-${index}`}>
+                        <AccordionTrigger className="text-left">
+                          {faq.question}
+                        </AccordionTrigger>
+                        <AccordionContent>
+                          <div
+                            className="prose prose-sm max-w-none text-neutral-600"
+                            dangerouslySetInnerHTML={{ __html: faq.answer }}
+                          />
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
                 </div>
               )}
 
