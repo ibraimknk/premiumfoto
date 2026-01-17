@@ -82,13 +82,14 @@ export default async function ServiceDetailPage({
   })
 
   // Get FAQs for this service
+  // Note: SQLite doesn't support 'mode: insensitive', so we use contains which is case-sensitive
   const faqs = await prisma.fAQ.findMany({
     where: {
       isActive: true,
       OR: [
-        { question: { contains: service.title, mode: 'insensitive' } },
-        { answer: { contains: service.title, mode: 'insensitive' } },
-        { question: { contains: service.category || '', mode: 'insensitive' } },
+        { question: { contains: service.title } },
+        { answer: { contains: service.title } },
+        ...(service.category ? [{ question: { contains: service.category } }] : []),
       ],
     },
     orderBy: { order: 'asc' },
