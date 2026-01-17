@@ -66,14 +66,15 @@ export default async function ServiceDetailPage({
   const videos = service.videos ? JSON.parse(service.videos) : []
 
   // Get related blog posts for this service
+  // Note: SQLite doesn't support 'mode: insensitive', so we use contains which is case-sensitive
   const relatedBlogs = await prisma.blogPost.findMany({
     where: {
       isPublished: true,
       publishedAt: { not: null },
       OR: [
-        { title: { contains: service.title, mode: 'insensitive' } },
+        { title: { contains: service.title } },
         { category: service.category || undefined },
-        { content: { contains: service.title, mode: 'insensitive' } },
+        { content: { contains: service.title } },
       ],
     },
     take: 3,
