@@ -9,6 +9,8 @@ import Container from "@/components/layout/Container"
 import { AnimatedSection } from "@/components/features/AnimatedSection"
 import { shouldUnoptimizeImage } from "@/lib/image-utils"
 import { getBlogImage } from "@/lib/blog-image-helper"
+import { SocialShare } from "@/components/features/SocialShare"
+import { BreadcrumbNav } from "@/components/features/BreadcrumbNav"
 
 // Dinamik rendering için - yeni blog'lar için 404 sorununu çözer
 export const dynamic = 'force-dynamic'
