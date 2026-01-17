@@ -7,7 +7,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import Image from "next/image"
 import Link from "next/link"
 import { Phone, MessageCircle } from "lucide-react"
-import { generatePageMetadata, generateServiceSchema, generateBreadcrumbSchema } from "@/lib/seo"
+import { generatePageMetadata, generateServiceSchema, generateBreadcrumbSchema, generateFAQSchema } from "@/lib/seo"
 import Container from "@/components/layout/Container"
 import { AnimatedSection } from "@/components/features/AnimatedSection"
 import { shouldUnoptimizeImage } from "@/lib/image-utils"
