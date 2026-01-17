@@ -60,7 +60,7 @@ export default async function ServicesPage() {
               Profesyonel Fotoğraf Hizmetlerimiz
             </h1>
             <p className="text-xl md:text-2xl text-neutral-600 max-w-4xl mx-auto leading-relaxed">
-              1997'den beri Ataşehir ve İstanbul'da profesyonel fotoğraf hizmetleri sunuyoruz. Düğün fotoğrafçılığından ürün çekimine, stüdyo çekiminden sosyal medya içeriklerine kadar geniş bir yelpazede hizmet veriyoruz.
+              1997&apos;den beri Ataşehir ve İstanbul&apos;da profesyonel fotoğraf hizmetleri sunuyoruz. Düğün fotoğrafçılığından ürün çekimine, stüdyo çekiminden sosyal medya içeriklerine kadar geniş bir yelpazede hizmet veriyoruz.
             </p>
             <div className="flex flex-wrap justify-center gap-4 mt-8">
               <div className="flex items-center gap-2 text-neutral-700">
@@ -191,7 +191,7 @@ export default async function ServicesPage() {
               </div>
               <h3 className="text-xl font-bold text-neutral-900 mb-2">25+ Yıl Deneyim</h3>
               <p className="text-neutral-600 text-sm">
-                1997'den beri binlerce mutlu müşteriye hizmet verdik
+                1997&apos;den beri binlerce mutlu müşteriye hizmet verdik
               </p>
             </AnimatedSection>
             
